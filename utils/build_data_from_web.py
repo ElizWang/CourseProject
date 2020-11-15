@@ -20,7 +20,9 @@ class DataSetBuilder:
         for conference_name in self.__conference_abbrevs:
             events = self.__get_conference_events(conference_name)
             content_urls = self.__get_content_urls(events)
-            print(content_urls)
+            
+            for content_url in content_urls:
+                print(self.__get_title_author_data(content_url))
 
     def __get_conference_events(self, conference_name):
         CONFERENCE_BASE_URL = "https://dblp.org/db/conf/"
@@ -28,8 +30,7 @@ class DataSetBuilder:
 
         conference_url = CONFERENCE_BASE_URL + conference_name + CONFERENCE_INDEX_URL
         data = urllib.request.urlopen(conference_url).read().decode("utf-8")
-        # Get a list of all events for the current conference by following "cite" component
-        return BeautifulSoup(data, 'html.parser').find_all('cite', {'class': 'data'})
+        return self.__get_citations(data)
 
     def __get_content_urls(self, conference_events):
         content_urls = []
@@ -37,6 +38,14 @@ class DataSetBuilder:
             content_urls.append(event.find('a', {'class': 'toc-link'})['href'])
         return content_urls
 
+    def __get_title_author_data(self, submissions_url):
+        data = urllib.request.urlopen(submissions_url).read().decode("utf-8")
+        return self.__get_citations(data)
+
+    def __get_citations(self, data):
+         # Get a list of all events for the current conference by following "cite" component
+        return BeautifulSoup(data, 'html.parser').find_all('cite', {'class': 'data'})
+
 if __name__ == "__main__":
     data_set_builder = DataSetBuilder(2, ['aciids'])
-    data_set_builder.build_data_set("b")
+    data_set_builder.build_data_set("data.csv")
