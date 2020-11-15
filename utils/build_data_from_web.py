@@ -17,12 +17,17 @@ class DataSetBuilder:
         self.__conference_abbrevs = conference_abbrevs
 
     def build_data_set(self, data_set_name):
+        data_file = open(data_set_name, "w")
+
         for conference_name in self.__conference_abbrevs:
             events = self.__get_conference_events(conference_name)
             content_urls = self.__get_content_urls(events)
             
             for content_url in content_urls:
-                self.__get_title_author_data(content_url)
+                author_title_info = self.__get_title_author_data(content_url)
+                self.__write_data_to_csv_file(data_file, author_title_info)
+
+        data_file.close()
 
     def __get_conference_events(self, conference_name):
         CONFERENCE_BASE_URL = "https://dblp.org/db/conf/"
@@ -53,6 +58,10 @@ class DataSetBuilder:
             title = citation.find('span', {'class': 'title'}).string
             author_title_info.append( (authors, title) )
         return author_title_info
+
+    def __write_data_to_csv_file(self, data_file, author_title_data):
+        for authors, title in author_title_data:
+            data_file.write("%s,%s\n" % (','.join(authors), title))
 
     def __get_citations(self, data):
          # Get a list of all events for the current conference by following "cite" component
