@@ -20,32 +20,32 @@ class DataSetBuilder:
         data_file = open(data_set_name, "w")
 
         for conference_name in self.__conference_abbrevs:
-            events = self.__get_conference_events(conference_name)
-            content_urls = self.__get_content_urls(events)
+            events = self.__parse_conference_events(conference_name)
+            content_urls = self.__parse_content_urls(events)
             
             for content_url in content_urls:
-                author_title_info = self.__get_title_author_data(content_url)
+                author_title_info = self.__parse_title_author_data(content_url)
                 self.__write_data_to_csv_file(data_file, author_title_info)
 
         data_file.close()
 
-    def __get_conference_events(self, conference_name):
+    def __parse_conference_events(self, conference_name):
         CONFERENCE_BASE_URL = "https://dblp.org/db/conf/"
         CONFERENCE_INDEX_URL = "/index.html"
 
         conference_url = CONFERENCE_BASE_URL + conference_name + CONFERENCE_INDEX_URL
         data = urllib.request.urlopen(conference_url).read().decode("utf-8")
-        return self.__get_citations(data)
+        return self.__parse_citations(data)
 
-    def __get_content_urls(self, conference_events):
+    def __parse_content_urls(self, conference_events):
         content_urls = []
         for event in conference_events[ : self.__num_events_per_conference]:
             content_urls.append(event.find('a', {'class': 'toc-link'})['href'])
         return content_urls
 
-    def __get_title_author_data(self, submissions_url):
+    def __parse_title_author_data(self, submissions_url):
         data = urllib.request.urlopen(submissions_url).read().decode("utf-8")
-        citations_list = self.__get_citations(data)
+        citations_list = self.__parse_citations(data)
 
         # (authors list, title) pairs
         author_title_info = []
@@ -63,7 +63,7 @@ class DataSetBuilder:
         for authors, title in author_title_data:
             data_file.write("%s,%s\n" % (','.join(authors), title))
 
-    def __get_citations(self, data):
+    def __parse_citations(self, data):
          # Get a list of all events for the current conference by following "cite" component
         return BeautifulSoup(data, 'html.parser').find_all('cite', {'class': 'data'})
 
