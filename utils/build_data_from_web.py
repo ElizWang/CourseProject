@@ -34,7 +34,7 @@ class DataSetBuilder:
     def __get_content_urls(self, conference_events):
         content_urls = []
         for event in conference_events[ : self.__num_events_per_conference]:
-            content_urls.append(event.find_all('a', {'class': 'toc-link'}))
+            content_urls.append(event.find('a', {'class': 'toc-link'})['href'])
         return content_urls
 
 if __name__ == "__main__":
