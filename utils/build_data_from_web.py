@@ -22,7 +22,7 @@ class DataSetBuilder:
             content_urls = self.__get_content_urls(events)
             
             for content_url in content_urls:
-                print(self.__get_title_author_data(content_url))
+                self.__get_title_author_data(content_url)
 
     def __get_conference_events(self, conference_name):
         CONFERENCE_BASE_URL = "https://dblp.org/db/conf/"
@@ -40,7 +40,19 @@ class DataSetBuilder:
 
     def __get_title_author_data(self, submissions_url):
         data = urllib.request.urlopen(submissions_url).read().decode("utf-8")
-        return self.__get_citations(data)
+        citations_list = self.__get_citations(data)
+
+        # (authors list, title) pairs
+        author_title_info = []
+        for citation in citations_list:
+            author_spans = citation.find_all('span', {'itemprop': 'author'})
+            authors = []
+            for author_span in author_spans:
+                authors.append(author_span.find('span', {'itemprop': 'name'})['title'])
+
+            title = citation.find('span', {'class': 'title'}).string
+            author_title_info.append( (authors, title) )
+        return author_title_info
 
     def __get_citations(self, data):
          # Get a list of all events for the current conference by following "cite" component
