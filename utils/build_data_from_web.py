@@ -146,8 +146,11 @@ class DataSetBuilder:
 if __name__ == "__main__":
     output_file = 'data/data.csv'
     # 12 conferences in all (as per paper instructions)
-    conferences = ['aciids', 'icdm', 'sdm', 'dba', 'balt', 'dbsec', 'dbcrowd', 'pkdd' ,'daisd', 'dbtest-ws', 'dateso', 'dbmachine']
-    events_per_conference = 5
+    # pkdd = thresh before
+    # db crowd = 1
+    # dba = 3   
+    conferences = ['aciids', 'icdm', 'sdm', 'dba', 'balt', 'dbsec', 'dbcrowd', 'pkdd' ,'kdd', 'trec', 'cikm', 'sigir']
+    events_per_conference = 10
 
     data_set_builder = DataSetBuilder(output_file, conferences, events_per_conference)    
     data_set_builder.build_data_set()
