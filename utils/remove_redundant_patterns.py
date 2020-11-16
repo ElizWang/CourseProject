@@ -1,3 +1,9 @@
+import sys
+sys.path.insert(1, 'utils/frequent_pattern_mining')
+
+from build_frequent_patterns import FrequentPatternBuilder
+from parse_patterns import parse_file_into_patterns
+
 '''
 NOTE: Each pattern is stored as a list of integers (@see parse_patterns.py
 for parsing implementation)
@@ -61,9 +67,10 @@ def find_one_pass_microclustering_patterns(patterns, dist_thresh = 0.9):
                 min_avg_dist = avg_intra_cluster_dist
                 min_intra_cluster_pattern_id = pattern_id
 
-        min_intra_dist_patterns.append(min_intra_cluster_pattern_id)
+        min_intra_dist_patterns.append(patterns[min_intra_cluster_pattern_id])
     print(min_intra_dist_patterns)
+    return min_intra_dist_patterns
 
-from parse_patterns import parse_file_into_patterns
-patterns = parse_file_into_patterns("data/toy_title_patterns.txt")
-find_one_pass_microclustering_patterns(patterns)
+if __name__ == "__main__":
+    title_patterns = parse_file_into_patterns(FrequentPatternBuilder.TITLE_TERMS_OUTPUT_FILE_PATH)
+    find_one_pass_microclustering_patterns(title_patterns)
