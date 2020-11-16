@@ -1,4 +1,5 @@
 from spmf_python_wrapper import run_spmf
+import os
 
 class FrequentPatternBuilder():
     '''
@@ -59,6 +60,19 @@ class FrequentPatternBuilder():
             FrequentPatternBuilder.TITLE_TERMS_OUTPUT_FILE_PATH, \
                 [str(self.__clospan_thresh) + "%", display_transaction_nums_str])   
          
+    def clean_intermediate_files(self):
+        '''
+        Delete input files built specifically for SPMF
+        '''
+        def delete_file(input_file):
+            if os.path.exists(input_file):
+                print("Deleting %s" % input_file)
+                os.remove(input_file)
+            else:
+                print("Warning: %s was not found" % input_file)
+        delete_file(FrequentPatternBuilder.AUTHORS_INPUT_FILE_PATH)
+        delete_file(FrequentPatternBuilder.TITLE_TERMS_INPUT_FILE_PATH)
+
     def __build_intermediate_smpf_input(self):
         '''
         Build intermediate files (title and author files). Note that the format for CloSpan
@@ -148,3 +162,4 @@ class FrequentPatternBuilder():
 if __name__ == "__main__":
     pattern_builder = FrequentPatternBuilder()
     pattern_builder.build_frequent_pattern_files()
+    pattern_builder.clean_intermediate_files()
