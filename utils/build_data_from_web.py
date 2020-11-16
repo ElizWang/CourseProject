@@ -106,7 +106,8 @@ class DataSetBuilder:
             raw_title = citation.find('span', {'class': 'title'}).string
             if not authors or not raw_title:
                 continue
-            stemmed_title = ' '.join([self.__stemmer.stem(word) for word in raw_title.split()])
+            title_no_spaces_commas = raw_title.replace(",", " ").replace(".", "")
+            stemmed_title = ' '.join([self.__stemmer.stem(word) for word in title_no_spaces_commas.split()])
 
             author_title_info.append( (authors, stemmed_title) )
         # Skip zeroth author/title tuple because it corresponds to the title of the EVENT 
