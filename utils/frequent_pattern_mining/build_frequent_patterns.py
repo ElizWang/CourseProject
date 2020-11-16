@@ -73,5 +73,5 @@ if __name__ == "__main__":
     write_word_id_mapping(author_id_mapping, AUTHOR_ID_FILE_PATH)
     write_word_id_mapping(title_term_id_mapping, TITLE_TERM_ID_FILE_PATH)
 
-    run_spmf("FPClose", AUTHORS_INPUT_FILE_PATH, AUTHORS_OUTPUT_FILE_PATH, ["10%"])
-    run_spmf("CloSpan", TITLE_TERMS_INPUT_FILE_PATH, TITLE_TERMS_OUTPUT_FILE_PATH, ["10%"])
+    run_spmf("FPClose", AUTHORS_INPUT_FILE_PATH, AUTHORS_OUTPUT_FILE_PATH, ["0.01%", "true"])
+    run_spmf("CloSpan", TITLE_TERMS_INPUT_FILE_PATH, TITLE_TERMS_OUTPUT_FILE_PATH, ["0.075%", "true"])
