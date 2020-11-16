@@ -36,8 +36,9 @@ def build_intermediate_smpf_input():
             if author not in author_id_mapping:
                 author_id_mapping[author] = curr_author_id
                 curr_author_id += 1
-            author_ids.append(str(author_id_mapping[author]))
-        authors_input_file.write("%s\n" % ' '.join(author_ids))
+            author_ids.append(author_id_mapping[author])
+        author_ids.sort()
+        authors_input_file.write("%s\n" % ' '.join([str(auth_id) for auth_id in author_ids]))
         
         title = line_as_lst[-1]
         term_ids = []
@@ -50,6 +51,8 @@ def build_intermediate_smpf_input():
             # -1 indicates the end of an itemset within a transaction
             term_ids.append(str(-1))
 
+        # -2 indicates the end of a transaction
+        term_ids.append(str(-2))
         title_terms_input_file.write("%s\n" % ' '.join(term_ids))
 
     data_csv_file.close()
