@@ -41,9 +41,28 @@ def compute_jaccard_distance_matrix(patterns):
 def get_jaccard_dist(jaccard_dists, id_1, id_2):
     return jaccard_dists[ (min(id_1, id_2), max(id_1, id_2)) ]
 
+def compute_representative_patterns_from_clusters(clusters, jaccard_dists):
+    min_intra_dist_patterns = []
+
+    for cluster_num in clusters:
+        cluster_pattern_ids = clusters[cluster_num]
+        min_intra_cluster_pattern_id = float("inf")
+        min_avg_dist = float("inf")
+
+        for pattern_id in cluster_pattern_ids:
+            avg_intra_cluster_dist = sum(get_jaccard_dist(jaccard_dists, pattern_id, cluster_pattern_id)\
+                for cluster_pattern_id in cluster_pattern_ids) / len(cluster_pattern_ids)
+
+            if min_avg_dist > avg_intra_cluster_dist:
+                min_avg_dist = avg_intra_cluster_dist
+                min_intra_cluster_pattern_id = pattern_id
+
+        min_intra_dist_patterns.append(patterns[min_intra_cluster_pattern_id])
+    return min_intra_dist_patterns
+
 def find_hierarchical_microclustering_patterns(patterns, dist_thresh = 0.7):
     clusters = {}
-    for ind, pattern in enumerate(patterns):
+    for ind in range(len(patterns)):
         clusters[ind] = set([ind])
 
     jaccard_dists = compute_jaccard_distance_matrix(patterns)
@@ -76,7 +95,10 @@ def find_hierarchical_microclustering_patterns(patterns, dist_thresh = 0.7):
 
         clusters[smaller_cluster_id] = clusters[smaller_cluster_id].union(clusters[larger_cluster_id])
         del clusters[larger_cluster_id]
-    print(clusters)
+
+    min_intra_dist_patterns = compute_representative_patterns_from_clusters(clusters, jaccard_dists)
+    print(min_intra_dist_patterns)
+    return min_intra_dist_patterns
 
 def find_one_pass_microclustering_patterns(patterns, dist_thresh = 0.9):
     '''
@@ -113,23 +135,7 @@ def find_one_pass_microclustering_patterns(patterns, dist_thresh = 0.9):
             clusters[curr_cluster_id] = [pattern_id]
             curr_cluster_id += 1
     
-    min_intra_dist_patterns = []
-
-    for cluster_num in clusters:
-        cluster_pattern_ids = clusters[cluster_num]
-        min_intra_cluster_pattern_id = float("inf")
-        min_avg_dist = float("inf")
-
-        for pattern_id in cluster_pattern_ids:
-            avg_intra_cluster_dist = sum(get_jaccard_dist(jaccard_dists, pattern_id, cluster_pattern_id)\
-                for cluster_pattern_id in cluster_pattern_ids) / len(cluster_pattern_ids)
-
-            if min_avg_dist > avg_intra_cluster_dist:
-                min_avg_dist = avg_intra_cluster_dist
-                min_intra_cluster_pattern_id = pattern_id
-
-        min_intra_dist_patterns.append(patterns[min_intra_cluster_pattern_id])
-    print(min_intra_dist_patterns)
+    min_intra_dist_patterns = compute_representative_patterns_from_clusters(clusters, jaccard_dists)
     return min_intra_dist_patterns
 
 if __name__ == "__main__":
