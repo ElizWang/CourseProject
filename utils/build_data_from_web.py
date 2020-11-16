@@ -39,10 +39,13 @@ class DataSetBuilder:
         data_file = open(self.__data_set_name, "w")
 
         for conference_name in self.__conference_abbrevs:
+            print("Parsing data for conference %s" % conference_name)
+
             events = self.__parse_conference_events(conference_name)
             content_urls = self.__parse_content_urls(events)
             
-            for content_url in content_urls:
+            for ind, content_url in enumerate(content_urls):
+                print("Parsing papers for event %d" % ind)
                 author_title_info = self.__parse_title_author_data(content_url)
                 self.__write_data_to_csv_file(data_file, author_title_info)
 
@@ -130,5 +133,10 @@ class DataSetBuilder:
         return BeautifulSoup(data, 'html.parser').find_all('cite', {'class': 'data'})
 
 if __name__ == "__main__":
-    data_set_builder = DataSetBuilder('data.csv', ['aciids'], 2)    
+    output_file = 'data.csv'
+    # 12 conferences in all (as per paper instructions)
+    conferences = ['aciids', 'icdm', 'sdm', 'dba', 'balt', 'dbsec', 'dbcrowd', 'pkdd' ,'daisd', 'dbtest-ws', 'dateso', 'dbmachine']
+    events_per_conference = 2
+
+    data_set_builder = DataSetBuilder(output_file, conferences, events_per_conference)    
     data_set_builder.build_data_set()
