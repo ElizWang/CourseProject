@@ -27,7 +27,8 @@ Yes, a more recent version of the dataset that derives from the dataset used in 
 N/A
 
 ## Setup
-0. Install bs4 and urllib (if they're not already installed)
-1. Run setup.sh (`sh setup.sh`) from CourseProject/ to build the csv file containing all (author list, title) entries. The code that builds this data file is here: utils/build_data_from_web.py. This script will create a directory called data/ and create a csv file called data.csv within that directory
-
-CSV file format: author1, author2, author3, ... etc, Title (where each line in the CSV file corresponds to a single paper)
+0. Install bs4, urllib, and nltk (if they're not already installed)
+1. Run setup.sh (`sh setup.sh`) from CourseProject/ to
+* Build the csv file containing all (author list, title) entries. The code that builds this data file is here: utils/build_data_from_web.py. This script will create a directory called data/ and create a csv file called data.csv within that directory -- CSV file format: author1, author2, author3, ... etc, Title (where each line in the CSV file corresponds to a single paper)
+* Create the libs/ directory and download spmf.jar, which is a JAR file for the SPMF library (download link is also here: http://www.philippe-fournier-viger.com/spmf/index.php?link=download.php)
+* Builds frequent patterns for authors and title terms -- data/frequent_author_patterns.txt and data/frequent_title_term_patterns.txt, where all words are mapped to unique ids and the id mapping is cached in these 2 files respectively: data/author_id_mappings.txt and data/title_term_id_mappings.txt. The code that builds these files is here: utils/frequent_pattern_mining/build_frequent_patterns.py

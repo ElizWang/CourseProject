@@ -106,7 +106,8 @@ class DataSetBuilder:
             raw_title = citation.find('span', {'class': 'title'}).string
             if not authors or not raw_title:
                 continue
-            stemmed_title = ' '.join([self.__stemmer.stem(word) for word in raw_title.split()])
+            title_no_spaces_commas = raw_title.replace(",", " ").replace(".", "")
+            stemmed_title = ' '.join([self.__stemmer.stem(word) for word in title_no_spaces_commas.split()])
 
             author_title_info.append( (authors, stemmed_title) )
         # Skip zeroth author/title tuple because it corresponds to the title of the EVENT 
@@ -115,7 +116,9 @@ class DataSetBuilder:
 
     def __write_data_to_csv_file(self, data_file, author_title_data):
         '''
-        Writes author title data to a csv file, where each line corresponds to a paper
+        Writes author title data to a csv file, where each line corresponds to a paper.
+        Replaces all commas from titles and all spaces from names to simplify parsing this file
+
         Format:
             author1, author2, author3, ... etc, Title
 
@@ -125,7 +128,10 @@ class DataSetBuilder:
             @see __parse_title_author_data for more info
         '''
         for authors, title in author_title_data:
-            data_file.write("%s,%s\n" % (','.join(authors), title))
+            # Replaces all commas, spaces in order to simplify parsing this file into intermediate files for SMPF
+            title = title.replace(",", "<comma>")
+            authors_no_spaces = [author.replace(" ", "_") for author in authors]
+            data_file.write("%s,%s\n" % (','.join(authors_no_spaces), title))
 
     def __parse_citations(self, data):
         '''
@@ -141,8 +147,11 @@ class DataSetBuilder:
 if __name__ == "__main__":
     output_file = 'data/data.csv'
     # 12 conferences in all (as per paper instructions)
-    conferences = ['aciids', 'icdm', 'sdm', 'dba', 'balt', 'dbsec', 'dbcrowd', 'pkdd' ,'daisd', 'dbtest-ws', 'dateso', 'dbmachine']
-    events_per_conference = 5
+    # pkdd = thresh before
+    # db crowd = 1
+    # dba = 3   
+    conferences = ['aciids', 'icdm', 'sdm', 'dba', 'balt', 'dbsec', 'dbcrowd', 'pkdd' ,'kdd', 'trec', 'cikm', 'sigir']
+    events_per_conference = 10
 
     data_set_builder = DataSetBuilder(output_file, conferences, events_per_conference)    
     data_set_builder.build_data_set()
