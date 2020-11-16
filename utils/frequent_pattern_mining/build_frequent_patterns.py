@@ -1,77 +1,94 @@
 from spmf_python_wrapper import run_spmf
 
-CSV_FILE_PATH = "data/data.csv"
+class FrequentPatternBuilder():
+    CSV_FILE_PATH = "data/data.csv"
 
-AUTHORS_INPUT_FILE_PATH = "data/authors_temp_input.txt"
-TITLE_TERMS_INPUT_FILE_PATH = "data/title_temp_input.txt"
+    AUTHORS_INPUT_FILE_PATH = "data/authors_temp_input.txt"
+    TITLE_TERMS_INPUT_FILE_PATH = "data/title_temp_input.txt"
 
-AUTHORS_OUTPUT_FILE_PATH = "data/frequent_author_patterns.txt"
-TITLE_TERMS_OUTPUT_FILE_PATH = "data/frequent_title_term_patterns.txt"
+    AUTHORS_OUTPUT_FILE_PATH = "data/frequent_author_patterns.txt"
+    TITLE_TERMS_OUTPUT_FILE_PATH = "data/frequent_title_term_patterns.txt"
 
-AUTHOR_ID_FILE_PATH = "data/author_id_mappings.txt"
-TITLE_TERM_ID_FILE_PATH = "data/title_term_id_mappings.txt"
+    AUTHOR_ID_FILE_PATH = "data/author_id_mappings.txt"
+    TITLE_TERM_ID_FILE_PATH = "data/title_term_id_mappings.txt"
 
-def build_intermediate_smpf_input():
-    '''
-    Build intermediate files
-    '''
-    authors_input_file = open(AUTHORS_INPUT_FILE_PATH, "w")
-    title_terms_input_file = open(TITLE_TERMS_INPUT_FILE_PATH, "w")
-    data_csv_file = open(CSV_FILE_PATH, "r")
-    
-    author_id_mapping = {}
-    curr_author_id = 0
+    def __init__(self, fp_close_thresh=0.01, clospan_thresh=0.075, display_transaction_nums=False):
+        self.__fp_close_thresh = fp_close_thresh
+        self.__clospan_thresh = clospan_thresh
+        self.__display_transaction_nums = display_transaction_nums
 
-    title_term_id_mapping = {}
-    curr_title_term = 0
+    def build_frequent_pattern_files(self):
+        author_id_mapping, title_term_id_mapping = self.__build_intermediate_smpf_input()
 
-    for line in data_csv_file:
-        print(line)
-        # Note: Titles are guaranteed to not have commas
-        line_as_lst = line.split(',')
-        authors = line_as_lst[ : -1]
-        author_ids = []
+        FrequentPatternBuilder.__write_word_id_mapping(author_id_mapping, FrequentPatternBuilder.AUTHOR_ID_FILE_PATH)
+        FrequentPatternBuilder.__write_word_id_mapping(title_term_id_mapping, FrequentPatternBuilder.TITLE_TERM_ID_FILE_PATH)
 
-        for author in authors:
-            if author not in author_id_mapping:
-                author_id_mapping[author] = curr_author_id
-                curr_author_id += 1
-            author_ids.append(author_id_mapping[author])
-        author_ids.sort()
-        authors_input_file.write("%s\n" % ' '.join([str(auth_id) for auth_id in author_ids]))
+        display_transaction_nums_str = str(self.__display_transaction_nums).lower()
+
+        run_spmf("FPClose", FrequentPatternBuilder.AUTHORS_INPUT_FILE_PATH, \
+            FrequentPatternBuilder.AUTHORS_OUTPUT_FILE_PATH, \
+                [str(self.__fp_close_thresh) + "%", display_transaction_nums_str])
+
+        run_spmf("CloSpan", FrequentPatternBuilder.TITLE_TERMS_INPUT_FILE_PATH, \
+            FrequentPatternBuilder.TITLE_TERMS_OUTPUT_FILE_PATH, \
+                [str(self.__clospan_thresh) + "%", display_transaction_nums_str])   
+         
+    def __build_intermediate_smpf_input(self):
+        '''
+        Build intermediate files
+        '''
+        authors_input_file = open(FrequentPatternBuilder.AUTHORS_INPUT_FILE_PATH, "w")
+        title_terms_input_file = open(FrequentPatternBuilder.TITLE_TERMS_INPUT_FILE_PATH, "w")
+        data_csv_file = open(FrequentPatternBuilder.CSV_FILE_PATH, "r")
         
-        title = line_as_lst[-1]
-        term_ids = []
-        # TODO remove periods and commas????
-        for title_term in title.split():
-            if title_term not in title_term_id_mapping:
-                title_term_id_mapping[title_term] = curr_title_term
-                curr_title_term += 1
-            term_ids.append(str(title_term_id_mapping[title_term]))
-            # -1 indicates the end of an itemset within a transaction
-            term_ids.append(str(-1))
+        author_id_mapping = {}
+        curr_author_id = 0
 
-        # -2 indicates the end of a transaction
-        term_ids.append(str(-2))
-        title_terms_input_file.write("%s\n" % ' '.join(term_ids))
+        title_term_id_mapping = {}
+        curr_title_term = 0
 
-    data_csv_file.close()
-    title_terms_input_file.close()
-    authors_input_file.close()
+        for line in data_csv_file:
+            # Note: Titles are guaranteed to not have commas
+            line_as_lst = line.split(',')
+            authors = line_as_lst[ : -1]
+            author_ids = []
 
-    return author_id_mapping, title_term_id_mapping
+            for author in authors:
+                if author not in author_id_mapping:
+                    author_id_mapping[author] = curr_author_id
+                    curr_author_id += 1
+                author_ids.append(author_id_mapping[author])
+            author_ids.sort()
+            authors_input_file.write("%s\n" % ' '.join([str(auth_id) for auth_id in author_ids]))
+            
+            title = line_as_lst[-1]
+            term_ids = []
+            # TODO remove periods and commas????
+            for title_term in title.split():
+                if title_term not in title_term_id_mapping:
+                    title_term_id_mapping[title_term] = curr_title_term
+                    curr_title_term += 1
+                term_ids.append(str(title_term_id_mapping[title_term]))
+                # -1 indicates the end of an itemset within a transaction
+                term_ids.append(str(-1))
 
-def write_word_id_mapping(word_id_mapping, output_file_path):
-    word_id_file = open(output_file_path, "w")
-    for word in word_id_mapping:
-        word_id_file.write("%d %s\n" % (word_id_mapping[word], word))
-    word_id_file.close()
+            # -2 indicates the end of a transaction
+            term_ids.append(str(-2))
+            title_terms_input_file.write("%s\n" % ' '.join(term_ids))
+
+        data_csv_file.close()
+        title_terms_input_file.close()
+        authors_input_file.close()
+
+        return author_id_mapping, title_term_id_mapping
+
+    @staticmethod
+    def __write_word_id_mapping(word_id_mapping, output_file_path):
+        word_id_file = open(output_file_path, "w")
+        for word in word_id_mapping:
+            word_id_file.write("%d %s\n" % (word_id_mapping[word], word))
+        word_id_file.close()
 
 if __name__ == "__main__":
-    author_id_mapping, title_term_id_mapping = build_intermediate_smpf_input()
-
-    write_word_id_mapping(author_id_mapping, AUTHOR_ID_FILE_PATH)
-    write_word_id_mapping(title_term_id_mapping, TITLE_TERM_ID_FILE_PATH)
-
-    run_spmf("FPClose", AUTHORS_INPUT_FILE_PATH, AUTHORS_OUTPUT_FILE_PATH, ["0.01%", "true"])
-    run_spmf("CloSpan", TITLE_TERMS_INPUT_FILE_PATH, TITLE_TERMS_OUTPUT_FILE_PATH, ["0.075%", "true"])
+    pattern_builder = FrequentPatternBuilder()
+    pattern_builder.build_frequent_pattern_files()
