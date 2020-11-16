@@ -23,3 +23,4 @@ echo "Downloading spmf.jar file to mine frequent patterns"
 cd libs
 wget http://www.philippe-fournier-viger.com/spmf/download-spmfjar.php -O spmf.jar
 cd ..
+python utils/frequent_pattern_mining/build_frequent_patterns.py
