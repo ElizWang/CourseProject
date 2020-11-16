@@ -102,6 +102,8 @@ class DataSetBuilder:
                 authors.append(author_span.find('span', {'itemprop': 'name'})['title'])
 
             title = citation.find('span', {'class': 'title'}).string
+            if not authors or not title:
+                continue
             author_title_info.append( (authors, title) )
         # Skip zeroth author/title tuple because it corresponds to the title of the EVENT 
         # and the hosts of the event, rather than a specific paper
@@ -110,7 +112,8 @@ class DataSetBuilder:
     def __write_data_to_csv_file(self, data_file, author_title_data):
         '''
         Writes author title data to a csv file, where each line corresponds to a paper.
-        Replaces all commas from titles to simplify parsing this file
+        Replaces all commas from titles and all spaces from names to simplify parsing this file
+
         Format:
             author1, author2, author3, ... etc, Title
 
@@ -120,9 +123,10 @@ class DataSetBuilder:
             @see __parse_title_author_data for more info
         '''
         for authors, title in author_title_data:
-            # Replaces all commas in order to simplify parsing this file into intermediate files for SMPF
+            # Replaces all commas, spaces in order to simplify parsing this file into intermediate files for SMPF
             title = title.replace(",", "<comma>")
-            data_file.write("%s,%s\n" % (','.join(authors), title))
+            authors_no_spaces = [author.replace(" ", "_") for author in authors]
+            data_file.write("%s,%s\n" % (','.join(authors_no_spaces), title))
 
     def __parse_citations(self, data):
         '''
