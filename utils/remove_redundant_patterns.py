@@ -6,8 +6,8 @@ from parse_patterns import parse_file_into_patterns
 
 '''
 Utility methods for 
-* Calculating Jaccard distance
 * Eliminating redundancy using one pass microclustering
+* Eliminating redundancy using hierarchical microclustering
 '''
 
 def calculate_jaccard_distance(pattern_1, pattern_2):
@@ -28,9 +28,14 @@ def calculate_jaccard_distance(pattern_1, pattern_2):
     return 1 - intersection_len / union_len
 
 def compute_jaccard_distance_matrix(patterns):
-    # Patterns are denoted by their index
-    # Jaccard dists are keyed via tuples -- (p1_ind, p2_ind) such that 
-    # p1_ind < p2_ind
+    '''
+    Computes a triangular matrix of Jaccard distances
+
+    @param patterns: list(list(int))    List of parsed frequent patterns
+    @return dict( (int, int), float ), keyed by pattern IDs (aka pattern indices
+        (p1_ind, p2_ind) such that p1_ind <= p2_ind) whose values are Jaccard 
+        distances
+    '''
     jaccard_dists = {}
     num_patterns = len(patterns)
     for i in range(num_patterns):
@@ -39,9 +44,28 @@ def compute_jaccard_distance_matrix(patterns):
     return jaccard_dists
 
 def get_jaccard_dist(jaccard_dists, id_1, id_2):
+    '''
+    Get Jaccard distance given two pattern ids (id_1 doesn't have to be leq id_2)
+
+    @param id_1: int       Pattern id 1
+    @param id_2: int       Pattern id 2
+    @return Jaccard distance between these 2 patterns
+    '''
     return jaccard_dists[ (min(id_1, id_2), max(id_1, id_2)) ]
 
-def compute_representative_patterns_from_clusters(clusters, jaccard_dists):
+def compute_representative_patterns_from_clusters(patterns, clusters, jaccard_dists):
+    '''
+    Compute representative patterns given clusters -- one pattern is computed per
+    cluster (namely, the pattenr with the minimum average intracluster distance is
+    selected)
+
+    @param clusters: dict( int, Collection(int))    Dictionary of cluster-ID (integer)
+        to pattern ID mappings -- denotes which patterns belong to which clusters
+    @param jaccard_dists: dict( (int, int), float ) Dict keyed by pattern IDs (aka pattern 
+        indices (p1_ind, p2_ind) such that p1_ind <= p2_ind) whose values are Jaccard 
+        distances
+    @return list(list(int)), list of representive patterns, aka P' in the algorithm
+    '''
     min_intra_dist_patterns = []
 
     for cluster_num in clusters:
@@ -61,6 +85,24 @@ def compute_representative_patterns_from_clusters(clusters, jaccard_dists):
     return min_intra_dist_patterns
 
 def find_hierarchical_microclustering_patterns(patterns, dist_thresh = 0.7):
+    '''
+    Computes a list of non-redundant patterns using the hierarchical microclustering
+    algorithm
+
+    @param patterns: list(list(int)):   A list of patterns, where each pattern is 
+        a list(int)
+    @param dist_thresh: float           Distance threshold, used when deciding whether
+        to place a pattern in an existing cluster or create a new cluster for it
+    @return list(list(int)), list of representive patterns
+
+    TODO TODO TODO: Not sure if this algorithm is right -- the psuedocode in the paper
+    doesn't explain:
+    * How we should compute d_st after the first iteration (when we've already merged a
+    cluster, so it wouldn't make sense to use the distance between individual patterns again,
+    because that will never change). We're computing the distances between clusters instead
+    * What d_uv is used for
+    * How d is updated (we're treating this as the smallest max inter-cluster distance)
+    '''
     clusters = {}
     for ind in range(len(patterns)):
         clusters[ind] = set([ind])
@@ -96,7 +138,7 @@ def find_hierarchical_microclustering_patterns(patterns, dist_thresh = 0.7):
         clusters[smaller_cluster_id] = clusters[smaller_cluster_id].union(clusters[larger_cluster_id])
         del clusters[larger_cluster_id]
 
-    min_intra_dist_patterns = compute_representative_patterns_from_clusters(clusters, jaccard_dists)
+    min_intra_dist_patterns = compute_representative_patterns_from_clusters(patterns, clusters, jaccard_dists)
     print(min_intra_dist_patterns)
     return min_intra_dist_patterns
 
@@ -109,6 +151,7 @@ def find_one_pass_microclustering_patterns(patterns, dist_thresh = 0.9):
         a list(int)
     @param dist_thresh: float           Distance threshold, used when deciding whether
         to place a pattern in an existing cluster or create a new cluster for it
+    @return list(list(int)), list of representive patterns
     '''
     jaccard_dists = compute_jaccard_distance_matrix(patterns)
 
@@ -135,7 +178,7 @@ def find_one_pass_microclustering_patterns(patterns, dist_thresh = 0.9):
             clusters[curr_cluster_id] = [pattern_id]
             curr_cluster_id += 1
     
-    min_intra_dist_patterns = compute_representative_patterns_from_clusters(clusters, jaccard_dists)
+    min_intra_dist_patterns = compute_representative_patterns_from_clusters(patterns, clusters, jaccard_dists)
     return min_intra_dist_patterns
 
 if __name__ == "__main__":
