@@ -100,7 +100,9 @@ class DataSetBuilder:
 
             title = citation.find('span', {'class': 'title'}).string
             author_title_info.append( (authors, title) )
-        return author_title_info
+        # Skip zeroth author/title tuple because it corresponds to the title of the EVENT 
+        # and the hosts of the event, rather than a specific paper
+        return author_title_info[1:]
 
     def __write_data_to_csv_file(self, data_file, author_title_data):
         '''
