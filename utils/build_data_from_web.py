@@ -1,6 +1,7 @@
 import os
 from bs4 import BeautifulSoup
 import urllib.request
+from nltk.stem.porter import *
 
 '''
 Background:
@@ -30,6 +31,7 @@ class DataSetBuilder:
         self.__num_events_per_conference = num_events_per_conference
         self.__conference_abbrevs = conference_abbrevs
         self.__data_set_name = data_set_name
+        self.__stemmer = PorterStemmer()
 
     def build_data_set(self):
         '''
@@ -101,8 +103,12 @@ class DataSetBuilder:
             for author_span in author_spans:
                 authors.append(author_span.find('span', {'itemprop': 'name'})['title'])
 
-            title = citation.find('span', {'class': 'title'}).string
-            author_title_info.append( (authors, title) )
+            raw_title = citation.find('span', {'class': 'title'}).string
+            if not authors or not raw_title:
+                continue
+            stemmed_title = ' '.join([self.__stemmer.stem(word) for word in raw_title.split()])
+
+            author_title_info.append( (authors, stemmed_title) )
         # Skip zeroth author/title tuple because it corresponds to the title of the EVENT 
         # and the hosts of the event, rather than a specific paper
         return author_title_info[1:]
