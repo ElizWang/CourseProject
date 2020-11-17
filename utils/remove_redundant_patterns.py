@@ -1,14 +1,17 @@
 import sys
-sys.path.insert(1, 'utils/frequent_pattern_mining')
+import os
+sys.path.insert(1, os.path.join('utils', 'frequent_pattern_mining'))
 
 from build_frequent_patterns import FrequentPatternBuilder
-from parse_patterns import parse_file_into_patterns
+from parse_patterns import parse_file_into_patterns, write_patterns_to_file
 
 '''
 Utility methods for 
 * Eliminating redundancy using one pass microclustering
 * Eliminating redundancy using hierarchical microclustering
 '''
+
+MINIMAL_TITLE_TERMS_FILENAME = os.path.join('data', 'minimal_title_term_patterns.txt')
 
 def calculate_jaccard_distance(pattern_1, pattern_2):
     '''
@@ -182,8 +185,6 @@ def find_one_pass_microclustering_patterns(patterns, dist_thresh = 0.9):
     return min_intra_dist_patterns
 
 if __name__ == "__main__":
-    patterns = parse_file_into_patterns("data/toy_title_patterns.txt")
-    find_hierarchical_microclustering_patterns(patterns)
-
-    #title_patterns = parse_file_into_patterns(FrequentPatternBuilder.TITLE_TERMS_OUTPUT_FILE_PATH)
-    #find_one_pass_microclustering_patterns(title_patterns, 0.7)
+    title_patterns = parse_file_into_patterns(FrequentPatternBuilder.TITLE_TERMS_OUTPUT_FILE_PATH)
+    minimal_patterns = find_one_pass_microclustering_patterns(title_patterns, 0.5)
+    write_patterns_to_file(MINIMAL_TITLE_TERMS_FILENAME, minimal_patterns)
