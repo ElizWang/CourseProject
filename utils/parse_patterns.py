@@ -10,3 +10,9 @@ def parse_file_into_patterns(pattern_file_name):
 
     pattern_file.close()
     return patterns
+
+def write_patterns_to_file(pattern_file_name, patterns):
+    pattern_file = open(pattern_file_name, "w")
+    for pattern in patterns:
+        pattern_file.write("%s\n" % ' ' .join([str(item) for item in pattern]))
+    pattern_file.close()
