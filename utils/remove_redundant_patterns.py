@@ -1,16 +1,9 @@
 import sys
-<<<<<<< HEAD
 import os
 sys.path.insert(1, os.path.join('utils', 'frequent_pattern_mining'))
 
 from build_frequent_patterns import FrequentPatternBuilder
 from parse_patterns import parse_file_into_patterns, write_patterns_to_file
-=======
-sys.path.insert(1, 'utils/frequent_pattern_mining')
-
-from build_frequent_patterns import FrequentPatternBuilder
-from parse_patterns import parse_file_into_patterns
->>>>>>> 65e697f29fe4bb512eb964491fbc45c1fa65854e
 
 '''
 Utility methods for 
@@ -18,11 +11,8 @@ Utility methods for
 * Eliminating redundancy using hierarchical microclustering
 '''
 
-<<<<<<< HEAD
 MINIMAL_TITLE_TERMS_FILENAME = os.path.join('data', 'minimal_title_term_patterns.txt')
 
-=======
->>>>>>> 65e697f29fe4bb512eb964491fbc45c1fa65854e
 def calculate_jaccard_distance(pattern_1, pattern_2):
     '''
     Computes Jaccard distance based on this formula:
