@@ -23,4 +23,23 @@ echo "Downloading spmf.jar file to mine frequent patterns"
 cd libs
 wget http://www.philippe-fournier-viger.com/spmf/download-spmfjar.php -O spmf.jar
 cd ..
+
+echo "Mining frequent patterns"
 python utils/frequent_pattern_mining/build_frequent_patterns.py
+
+echo "Removing redudancies from sequencial title term patterns"
+python utils/remove_redundant_patterns.py
+
+echo "Checking to make sure all required files exist"
+declare -a required_files=("data/frequent_author_patterns.txt" "data/author_id_mappings.txt" "data/title_term_id_mappings.txt" "data/title_term_id_mappings.txt")
+for i in "${required_files[@]}"
+do
+if [ -e $i ]
+then
+    echo "$i exists!"
+else
+    echo "ERROR: $i doesn't exist" 
+    exit
+fi
+done
+echo "Success (everything was set up/generated correctly!)"
