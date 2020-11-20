@@ -36,6 +36,6 @@ N/A
 
 RELEVANT OUTPUT FILES FOR NEXT STAGE:
 * data/frequent_author_patterns.txt (ID mappings: data/author_id_mappings.txt)
-* data/title_term_id_mappings.txt (ID mappings: data/title_term_id_mappings.txt
+* data/minimal_title_term_patterns.txt (ID mappings: data/title_term_id_mappings.txt
 
 NOTE: utils/parse_patterns.py contains utility methods to parse patterns into data structures and write them to files, you may find these methods useful
