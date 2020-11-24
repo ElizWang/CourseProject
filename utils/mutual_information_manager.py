@@ -4,11 +4,37 @@ from parse_patterns import parse_file_into_patterns
 
 import os
 
+'''
+Usage:
+* To compute mutual information and to write to a file
+    transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
+    mutual_info = MutualInformationManager(transactions, True)
+    mutual_info.compute_mutual_information(author_patterns)
+
+Output file format:
+    index1 index2 MI
+where index1 <= index2
+
+* To read the mutual info file into this class and to get the mutual information given a
+  pair of indices
+     mutual_info = MutualInformationManager()
+     mutual_info.read_mutual_information_from_file()
+     mutual_info.get_mutual_information(1, 2) # to get mutual info for patterns 1 and 2
+
+Note: We're storing one MI value per pair of AUTHOR pattern indices.
+'''
 class MutualInformationManager:
 
+    # TODO pass this in as a param, make this code more flexible st we can use it for authors and
+    # title patterns
     AUTHOR_MUTUAL_INFO_FILENAME = os.path.join("data", "author_mutual_info_patterns.txt")
 
     def __init__(self, transactions=None, write_to_file_during_computation=False):
+        '''
+        @param
+            transactions: TransactionManager        transaction manager storing parsed paper data
+            write_to_file_during_computation: bool  true to write to MI file when computing MIs, else false
+        '''
         # Dictionary of (pattern index a, pattern index b) pairs where
         # a <= b (aka a triangular matrix)
         self.__mutual_info_vals = {}
@@ -16,6 +42,11 @@ class MutualInformationManager:
         self.__write_to_file_during_computation = write_to_file_during_computation
 
     def read_mutual_information_from_file(self):
+        '''
+        Reads mutual information from file and populates the mutual information triangular matrix this
+        class stores. Note that it assumes that the first pattern index is <= the second pattern index 
+        (aka that it was generated using this file)
+        '''
         mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "r")
         for line in mutual_info_file:
             mutual_info_lst = line.strip.split()
@@ -29,6 +60,9 @@ class MutualInformationManager:
         mutual_info_file.close()
 
     def write_mutual_information_to_file(self):
+        '''
+        Writes mutual information computed to a file. Assumes that mutual info has already been computed
+        '''
         if self.__write_to_file_during_computation:
             print("You've already written this information to a file")
             return
@@ -41,6 +75,10 @@ class MutualInformationManager:
         mutual_info_file.close()
 
     def compute_mutual_information(self, patterns):
+        '''
+        Computes mutual information for pattern indices (a, b) given that a <= b. In other words, it
+        computes a triangular matrix of mutual information values bc MI is symmetric
+        '''
         if not transactions:
             print("You can't compute mutual information with a null transactions manager")
             return
@@ -53,8 +91,7 @@ class MutualInformationManager:
         for ind_x, pattern_x in enumerate(patterns):
             for ind_y in range(ind_x, num_patterns):
 
-                self.__mutual_info_vals[(ind_x, ind_y)] = \
-                    self.__compute_mutual_information(pattern_x, patterns[ind_y])
+                self.__mutual_info_vals[(ind_x, ind_y)] = self.compute_mutual_information_for_pattern_pair(pattern_x, patterns[ind_y])
                 mi.append(self.__mutual_info_vals[(ind_x, ind_y)])
                 print(ind_x, ind_y, self.__mutual_info_vals[(ind_x, ind_y)])
 
@@ -68,13 +105,32 @@ class MutualInformationManager:
         print(min(mi))
 
     def get_mutual_information(self, pattern_index_x, pattern_index_y):
+        '''
+        Get precomputed mutual information value given 2 indices. Assumes that the mutual info matrix has been
+        computed/read in. Doesn't assume that one index is greater than another
+
+        @param
+            pattern_index_x: int        Pattern index to find MI for
+            pattern_index_y: int        Pattern index to find MI for
+
+        @return mutual information val, which is represented as a float
+        '''
         if pattern_index_x <= pattern_index_y:
             ind_tup = (pattern_index_x, pattern_index_y)
         else:
             ind_tup = (pattern_index_y, pattern_index_x)
         return self.__mutual_info_vals[ind_tup]
 
-    def __compute_mutual_information(self, pattern_x, pattern_y):
+    def compute_mutual_information_for_pattern_pair(self, pattern_x, pattern_y):
+        '''
+        Computes mutual information value given patterns using the transaction manager.
+
+        @param
+            pattern_x: vec[int]        Pattern of author IDs to find MI for
+            pattern_y: vec[int]        Pattern of author IDs to find MI for
+
+        @return mutual information val, which is represented as a float
+        '''
         if not transactions:
             print("You can't compute mutual information with a null transactions manager")
             return
