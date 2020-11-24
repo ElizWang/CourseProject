@@ -1,12 +1,35 @@
+'''
+Encapsulates all papers (aka data.csv) and provides utility methods
+'''
 class TransactionsManager:
 
+    '''
+    Represents a single paper
+    '''
     class Paper:
         def __init__(self, authors, title):
+            '''
+            @param
+                authors: Collection(int)    Collection of author ids
+                title: list(int)            Ordered list of title word ids
+            
+            IMPORTANT: Both collections must store integers (to correctly compute the
+            support of a certain pattern)
+            '''
             self.authors = authors
             self.title = title
 
     def __init__(self, papers_file_name, authors_mapping_filename, \
                 title_terms_mapping_filename):
+        '''
+        Parses and stores the author-id mapping, the title terms-id mapping, and
+        a list of all papers
+
+        @param
+            papers_file_name: string                data.csv file path
+            authors_mapping_filename: string        file path to author-id mapping file
+            title_terms_mapping_filename: string    file path to title term-id mapping file
+        '''
         papers_file = open(papers_file_name, "r")
         
         # {Author name, id}
@@ -38,9 +61,16 @@ class TransactionsManager:
         papers_file.close()
     
     def find_author_pattern_support(self, author_pattern):
+        '''
+        Compute the support of a given author pattern wrt the parsed papers
+
+        @param:
+            author_pattern: Collection(int)     Collection of author ids
+        '''
         support = 0
         for paper in self.__papers:
             # NOTE: This wasn't working -- if author_pattern.issubset(paper.authors)
+            # TODO object decomp: this part makes more sense within the Papers class
             is_subset = True
             for author in paper.authors:
                 if author not in author_pattern:
@@ -51,10 +81,20 @@ class TransactionsManager:
         return support
 
     def get_number_of_transactions(self):
+        '''
+        Returns the number of papers, aka the number of transactions
+        '''
         return len(self.__papers)
 
     @staticmethod
     def __parse_mapping(mapping_filename, mapping):
+        '''
+        Parses a mapping from a file into a dictionary
+
+        @param
+            mapping_filename: string        Filename containing id-word mapping
+            mapping: dict(string, int)      Mapping dict to be populated
+        '''
         mapping_file = open(mapping_filename, "r")
 
         for line in mapping_file:
