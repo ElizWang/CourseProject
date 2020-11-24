@@ -9,9 +9,17 @@ from mutual_information_manager import MutualInformationManager
 from parse_patterns import parse_file_into_patterns
 from cosine_similarity import compute_cosine_similarity
 
+'''
+Extracts representative transactions and pretty prints them
+'''
 class RepresentativeTransactionExtractor:
     # From: https://stackoverflow.com/questions/2501457/what-do-i-use-for-a-max-heap-implementation-in-python
     class TransactionSimilarity(object):
+        '''
+        Transaction similarity object used to implement a maxheap. Stores the cosine similarity, which is used
+        for comparisions and the transaction index, which keeps track of which transaction the cosine similarity
+        belongs to
+        '''
         def __init__(self, cosine_sim, transaction_ind): 
             self.cosine_sim = cosine_sim
             self.transaction_ind = transaction_ind
@@ -23,6 +31,14 @@ class RepresentativeTransactionExtractor:
             return self.cosine_sim == other.cosine_sim
 
     def __init__(self, transaction_mananger, mutual_info_manager, patterns, num_transactions, is_author):
+        '''
+        @param
+            transaction_mananger: TransactionsManager       Object storing all transactions (every line from data.csv)
+            mutual_info_manager: MutualInformationManager   Object storing a set of all author-author mutual information vals
+            patterns: list(list(int))                       List of all SSP patterns
+            num_transactions: int                           Top k most representative transactions to find
+            is_author: bool                                 True if SSP == authors, false otherwise
+        '''
         self.__transaction_manager = transaction_mananger
         self.__mutual_info_manager = mutual_info_manager
 
@@ -30,25 +46,15 @@ class RepresentativeTransactionExtractor:
         self.__num_transactions = num_transactions
         self.__is_author = is_author
 
-    def __compute_paper_context_models(self):
-        # TODO implement context models when is_author is false
-        context_models = []
-
-        for paper_id in range(self.__transaction_manager.get_number_of_transactions()):
-            paper_context_model = []
-
-            for pattern in self.__patterns:
-                paper_authors = self.__transaction_manager.get_paper_authors(paper_id)
-                mutual_info = \
-                    MutualInformationManager.compute_mutual_information_for_pattern_pair(self.__transaction_manager, \
-                        pattern, paper_authors)
-                paper_context_model.append(mutual_info)
-
-            context_models.append(paper_context_model)
-        return context_models
-
     def find_representative_transactions(self):
-        paper_context_models = self.__compute_paper_context_models()
+        '''
+        Finds the top num_transactions representative transactions for each pattern inputted in the constructor
+
+        @return a map of (int, list(int)), where key = index of the pattern and value = a list of all 
+            indices (aka ids) of the papers ordered from most representative to least representative and of
+            size num_transactions
+        '''
+        paper_context_models = self.__transaction_manager.compute_author_context_models(self.__patterns)
         context_model_dim = len(self.__patterns)
 
         similarities_max_q = []
@@ -71,6 +77,16 @@ class RepresentativeTransactionExtractor:
         return repr_transactions
 
     def display_pretty(self, repr_transactions):
+        '''
+        Prints the representative transactions out per pattern. All patterns and transactions are represented
+        as words rather than their ids.
+
+        @param
+        repr_transactions dict(int, list(int)):       representative transactions
+            key = index of the pattern and value = a list of all 
+            indices (aka ids) of the papers ordered from most representative to least representative and of
+            size num_transactions
+        '''
         for pattern_ind in repr_transactions:
             pattern = self.__patterns[pattern_ind]
             pattern_words = [self.__transaction_manager.get_author_name(word_id) for word_id in pattern]
