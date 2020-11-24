@@ -89,7 +89,9 @@ class MutualInformationManager:
         num_patterns = len(patterns)
         for ind_x, pattern_x in enumerate(patterns):
             for ind_y in range(ind_x, num_patterns):
-                self.__mutual_info_vals[(ind_x, ind_y)] = self.compute_mutual_information_for_pattern_pair(pattern_x, patterns[ind_y])
+                self.__mutual_info_vals[(ind_x, ind_y)] = \
+                    MutualInformationManager.compute_mutual_information_for_pattern_pair(self.__transactions, \
+                        pattern_x, patterns[ind_y])
 
                 if self.__write_to_file_during_computation:
                     mutual_info_file.write("%d %d %f\n" % (ind_x, ind_y, \
@@ -114,7 +116,8 @@ class MutualInformationManager:
             ind_tup = (pattern_index_y, pattern_index_x)
         return self.__mutual_info_vals[ind_tup]
 
-    def compute_mutual_information_for_pattern_pair(self, pattern_x, pattern_y):
+    @staticmethod
+    def compute_mutual_information_for_pattern_pair(transaction_manager, pattern_x, pattern_y):
         '''
         Computes mutual information value given patterns using the transaction manager.
 
@@ -124,7 +127,7 @@ class MutualInformationManager:
 
         @return mutual information val, which is represented as a float
         '''
-        if not transactions:
+        if not transaction_manager:
             print("You can't compute mutual information with a null transactions manager")
             return
 
@@ -132,15 +135,15 @@ class MutualInformationManager:
         pattern_x_set = set(pattern_x)
         pattern_y_set = set(pattern_y)
 
-        x_paper_inds = self.__transactions.find_author_pattern_transactions_ids(pattern_x_set)
-        y_paper_inds = self.__transactions.find_author_pattern_transactions_ids(pattern_y_set)
+        x_paper_inds = transaction_manager.find_author_pattern_transactions_ids(pattern_x_set)
+        y_paper_inds = transaction_manager.find_author_pattern_transactions_ids(pattern_y_set)
         x_support = len(x_paper_inds)
         y_support = len(y_paper_inds)
 
         x_y_intersection_len = len(x_paper_inds.intersection(y_paper_inds))
         x_y_union_len = len(x_paper_inds.union(y_paper_inds))
 
-        num_transactions = self.__transactions.get_number_of_transactions()
+        num_transactions = transaction_manager.get_number_of_transactions()
 
         SMOOTHING_FACTOR = 0.001
         def get_smoothed_probability(num, denom):
