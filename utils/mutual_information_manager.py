@@ -27,7 +27,7 @@ class MutualInformationManager:
 
     # TODO pass this in as a param, make this code more flexible st we can use it for authors and
     # title patterns
-    AUTHOR_MUTUAL_INFO_FILENAME = os.path.join("data", "test.txt")
+    AUTHOR_MUTUAL_INFO_FILENAME = os.path.join("data", "author_mutual_info_patterns.txt")
 
     def __init__(self, transactions=None, write_to_file_during_computation=False):
         '''
@@ -140,33 +140,38 @@ class MutualInformationManager:
         x_y_intersection_len = len(x_paper_inds.intersection(y_paper_inds))
         x_y_union_len = len(x_paper_inds.union(y_paper_inds))
 
-        print(x_y_intersection_len, x_y_union_len, x_support, y_support)
         num_transactions = self.__transactions.get_number_of_transactions()
 
-        p_x_1 = x_support / num_transactions
-        p_y_1 = y_support / num_transactions
-        p_x_0 = (num_transactions - x_support) / num_transactions
-        p_y_0 = (num_transactions - y_support) / num_transactions
+        SMOOTHING_FACTOR = 0.001
+        def get_smoothed_probability(num, denom):
+            return (num + SMOOTHING_FACTOR) / (denom + 4 * SMOOTHING_FACTOR)
 
-        p_x_1_y_1 = x_y_intersection_len / num_transactions
-        p_x_0_y_1 = (y_support - x_y_intersection_len) / num_transactions
-        p_x_1_y_0 = (x_support - x_y_intersection_len) / num_transactions
-        p_x_0_y_0 = (num_transactions - x_y_union_len) / num_transactions
+        p_x_1 = get_smoothed_probability(x_support, num_transactions)
+        p_y_1 = get_smoothed_probability(y_support, num_transactions)        
+        p_x_0 = get_smoothed_probability(num_transactions - x_support, num_transactions)
+        p_y_0 = get_smoothed_probability(num_transactions - y_support, num_transactions)
+
+        p_x_1_y_1 = get_smoothed_probability(x_y_intersection_len, num_transactions)
+        p_x_0_y_1 = get_smoothed_probability(y_support - x_y_intersection_len, num_transactions)
+        p_x_1_y_0 = get_smoothed_probability(x_support - x_y_intersection_len, num_transactions)
+        p_x_0_y_0 = get_smoothed_probability(num_transactions - x_y_union_len, num_transactions)
         
-        mi_x_1_y_1 = p_x_1_y_1 / log2(p_x_1_y_1 / p_x_1 / p_y_1)
-        mi_x_1_y_0 = p_x_1_y_0 / log2(p_x_1_y_0 / p_x_1 / p_y_0)
-        mi_x_0_y_1 = p_x_0_y_1 / log2(p_x_0_y_1 / p_x_0 / p_y_1)
-        mi_x_0_y_0 = p_x_0_y_0 / log2(p_x_0_y_0 / p_x_0 / p_y_0)
+        def compute_mutual_information_for_pattern_pair(p_x_y, p_x, p_y):
+            #if p_x_y == 0:
+            #    return 0
+            return p_x_y / log2(p_x_y / p_x / p_y)
 
-        mi = mi_x_1_y_1 + mi_x_1_y_0 + mi_x_0_y_1 + mi_x_0_y_0
-        print(mi)
-        return mi
+        mi_x_1_y_1 = compute_mutual_information_for_pattern_pair(p_x_1_y_1, p_x_1, p_y_1)
+        mi_x_1_y_0 = compute_mutual_information_for_pattern_pair(p_x_1_y_0, p_x_1, p_y_0)
+        mi_x_0_y_1 = compute_mutual_information_for_pattern_pair(p_x_0_y_1, p_x_0, p_y_1)
+        mi_x_0_y_0 = compute_mutual_information_for_pattern_pair(p_x_0_y_0, p_x_0, p_y_0)
+        return mi_x_1_y_1 + mi_x_1_y_0 + mi_x_0_y_1 + mi_x_0_y_0
 
 if __name__ == "__main__":
     transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
     author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
     mutual_info = MutualInformationManager(transactions, True)
-    mutual_info.compute_mutual_information(author_patterns[:10])
+    mutual_info.compute_mutual_information(author_patterns)
     # mutual_info.write_mutual_information_to_file()
     
     # mutual_info = MutualInformationManager()
