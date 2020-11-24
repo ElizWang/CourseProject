@@ -8,11 +8,12 @@ class MutualInformationManager:
 
     AUTHOR_MUTUAL_INFO_FILENAME = os.path.join("data", "author_mutual_info_patterns.txt")
 
-    def __init__(self, transactions=None):
+    def __init__(self, transactions=None, write_to_file_during_computation=False):
         # Dictionary of (pattern index a, pattern index b) pairs where
         # a <= b (aka a triangular matrix)
         self.__mutual_info_vals = {}
         self.__transactions = transactions
+        self.__write_to_file_during_computation = write_to_file_during_computation
 
     def read_mutual_information_from_file(self):
         mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "r")
@@ -28,6 +29,10 @@ class MutualInformationManager:
         mutual_info_file.close()
 
     def write_mutual_information_to_file(self):
+        if self.__write_to_file_during_computation:
+            print("You've already written this information to a file")
+            return
+
         # Format: pattern_ind_1 pattern_ind_2 MI
         mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "w")
         for pattern_ind_x, pattern_ind_y in self.__mutual_info_vals:
@@ -40,6 +45,9 @@ class MutualInformationManager:
             print("You can't compute mutual information with a null transactions manager")
             return
 
+        if self.__write_to_file_during_computation:
+            mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "w")
+
         num_patterns = len(patterns)
         mi = []
         for ind_x, pattern_x in enumerate(patterns):
@@ -48,6 +56,14 @@ class MutualInformationManager:
                 self.__mutual_info_vals[(ind_x, ind_y)] = \
                     self.__compute_mutual_information(pattern_x, patterns[ind_y])
                 mi.append(self.__mutual_info_vals[(ind_x, ind_y)])
+                print(ind_x, ind_y, self.__mutual_info_vals[(ind_x, ind_y)])
+
+                if self.__write_to_file_during_computation:
+                    mutual_info_file.write("%d %d %f\n" % (ind_x, ind_y, \
+                        self.__mutual_info_vals[(ind_x, ind_y)]))
+        if self.__write_to_file_during_computation:
+            mutual_info_file.close()
+                   
         print(max(mi))
         print(min(mi))
 
@@ -94,6 +110,6 @@ class MutualInformationManager:
 if __name__ == "__main__":
     transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
     author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
-    mutual_info = MutualInformationManager(transactions)
+    mutual_info = MutualInformationManager(transactions, True)
     mutual_info.compute_mutual_information(author_patterns)
-    mutual_info.write_mutual_information_to_file()
+    # mutual_info.write_mutual_information_to_file()
