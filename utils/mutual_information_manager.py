@@ -49,7 +49,7 @@ class MutualInformationManager:
         '''
         mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "r")
         for line in mutual_info_file:
-            mutual_info_lst = line.strip.split()
+            mutual_info_lst = line.strip().split()
             assert len(mutual_info_lst) == 3
 
             ind_x = int(mutual_info_lst[0])
@@ -87,23 +87,16 @@ class MutualInformationManager:
             mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "w")
 
         num_patterns = len(patterns)
-        mi = []
         for ind_x, pattern_x in enumerate(patterns):
             for ind_y in range(ind_x, num_patterns):
-
                 self.__mutual_info_vals[(ind_x, ind_y)] = self.compute_mutual_information_for_pattern_pair(pattern_x, patterns[ind_y])
-                mi.append(self.__mutual_info_vals[(ind_x, ind_y)])
-                print(ind_x, ind_y, self.__mutual_info_vals[(ind_x, ind_y)])
 
                 if self.__write_to_file_during_computation:
                     mutual_info_file.write("%d %d %f\n" % (ind_x, ind_y, \
                         self.__mutual_info_vals[(ind_x, ind_y)]))
         if self.__write_to_file_during_computation:
             mutual_info_file.close()
-                   
-        print(max(mi))
-        print(min(mi))
-
+                  
     def get_mutual_information(self, pattern_index_x, pattern_index_y):
         '''
         Get precomputed mutual information value given 2 indices. Assumes that the mutual info matrix has been
@@ -168,4 +161,6 @@ if __name__ == "__main__":
     author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
     mutual_info = MutualInformationManager(transactions, True)
     mutual_info.compute_mutual_information(author_patterns)
-    # mutual_info.write_mutual_information_to_file()
+    mutual_info.write_mutual_information_to_file()
+    # mutual_info = MutualInformationManager()
+    # mutual_info.read_mutual_information_from_file()
