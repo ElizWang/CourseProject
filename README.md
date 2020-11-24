@@ -33,9 +33,11 @@ N/A
 * Create the libs/ directory and download spmf.jar, which is a JAR file for the SPMF library (download link is also here: http://www.philippe-fournier-viger.com/spmf/index.php?link=download.php)
 * Builds frequent patterns for authors and title terms -- data/frequent_author_patterns.txt and data/frequent_title_term_patterns.txt, where all words are mapped to unique ids and the id mapping is cached in these 2 files respectively: data/author_id_mappings.txt and data/title_term_id_mappings.txt. The code that builds these files is here: utils/frequent_pattern_mining/build_frequent_patterns.py
 * Removes redundancies from sequential frequent title patterns (data/title_term_id_mappings.txt) and creates a new file called data/minimal_title_term_patterns.txt containing these minimal patterns
+* Builds a file to cache all mutual information values between pairs of author patterns
 
 RELEVANT OUTPUT FILES FOR NEXT STAGE:
 * data/frequent_author_patterns.txt (ID mappings: data/author_id_mappings.txt)
-* data/minimal_title_term_patterns.txt (ID mappings: data/title_term_id_mappings.txt
+* data/minimal_title_term_patterns.txt (ID mappings: data/title_term_id_mappings.txt)
+* data/author_mutual_info_patterns.txt
 
 NOTE: utils/parse_patterns.py contains utility methods to parse patterns into data structures and write them to files, you may find these methods useful
