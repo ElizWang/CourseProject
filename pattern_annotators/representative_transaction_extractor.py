@@ -34,7 +34,7 @@ class RepresentativeTransactionExtractor:
         # TODO implement context models when is_author is false
         context_models = []
 
-        for paper_id in range(2): #self.__transaction_manager.get_number_of_transactions()):
+        for paper_id in range(self.__transaction_manager.get_number_of_transactions()):
             paper_context_model = []
 
             for pattern in self.__patterns:
@@ -52,7 +52,6 @@ class RepresentativeTransactionExtractor:
         context_model_dim = len(self.__patterns)
 
         similarities_max_q = []
-
         repr_transactions = {}
 
         for pattern_ind in range(context_model_dim):
@@ -71,6 +70,21 @@ class RepresentativeTransactionExtractor:
             repr_transactions[pattern_ind] = pattern_transactions
         return repr_transactions
 
+    def display_pretty(self, repr_transactions):
+        for pattern_ind in repr_transactions:
+            pattern = self.__patterns[pattern_ind]
+            pattern_words = [self.__transaction_manager.get_author_name(word_id) for word_id in pattern]
+            print("Pattern: %s" % ' '.join(pattern_words))
+
+            pattern_transactions = repr_transactions[pattern_ind]
+            for transaction_ind in pattern_transactions:
+                transaction_title_ids = self.__transaction_manager.get_paper_title_terms(transaction_ind)
+                transaction_title_words = [self.__transaction_manager.get_title_term(word_id) \
+                    for word_id in transaction_title_ids]
+                print("Most representative transaction %d: %s" % \
+                    (transaction_ind, ' '.join(transaction_title_words)))
+            print()
+
 if __name__ == "__main__":
     mutual_info = MutualInformationManager()
     mutual_info.read_mutual_information_from_file()    
@@ -79,4 +93,5 @@ if __name__ == "__main__":
     author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
     
     extractor = RepresentativeTransactionExtractor(transactions, mutual_info, author_patterns, 3, True)
-    extractor.find_representative_transactions()
+    repr_transactions = extractor.find_representative_transactions()
+    extractor.display_pretty(repr_transactions)
