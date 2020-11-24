@@ -72,6 +72,12 @@ class TransactionsManager:
                 author_transactions.add(ind)
         return author_transactions
 
+    def get_paper_authors(self, paper_id):
+        return self.__papers[paper_id].authors
+
+    def get_paper_title_terms(self, paper_id):
+        return self.__papers[paper_id].title
+
     def get_number_of_transactions(self):
         '''
         Returns the number of papers, aka the number of transactions
