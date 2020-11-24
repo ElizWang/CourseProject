@@ -98,7 +98,23 @@ class MutualInformationManager:
                         self.__mutual_info_vals[(ind_x, ind_y)]))
         if self.__write_to_file_during_computation:
             mutual_info_file.close()
-                  
+
+    def get_mutual_information_vector(self, pattern_ind, context_model_dim):
+        '''
+        Gets mutual information vector from precomputed mutual information cache. Assumes that the mutual info matrix has been
+        computed/read in. 
+
+        @param
+            pattern_ind: int              Pattern index to find MI vec for
+            context_model_dim: int        Dimension of context vector
+
+        @return mutual information val, which is represented as list(float)
+        '''
+        mi_vec = []
+        for other_pattern_ind in range(context_model_dim):
+            mi_vec.append(self.get_mutual_information(pattern_ind, other_pattern_ind))
+        return mi_vec
+
     def get_mutual_information(self, pattern_index_x, pattern_index_y):
         '''
         Get precomputed mutual information value given 2 indices. Assumes that the mutual info matrix has been
