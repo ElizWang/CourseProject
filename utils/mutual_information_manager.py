@@ -1,5 +1,5 @@
 from math import log2
-from transactions_manager import TransactionsManager
+import transactions_manager
 from parse_patterns import parse_file_into_patterns
 
 import os
@@ -187,11 +187,11 @@ class MutualInformationManager:
         return mi_x_1_y_1 + mi_x_1_y_0 + mi_x_0_y_1 + mi_x_0_y_0
 
 if __name__ == "__main__":
-    transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
-    author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
-    mutual_info = MutualInformationManager(transactions, True)
-    mutual_info.compute_mutual_information(author_patterns)
+    #transactions = transactions_manager.TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
+    #author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
+    #mutual_info = MutualInformationManager(transactions, True)
+    #mutual_info.compute_mutual_information(author_patterns)
     # mutual_info.write_mutual_information_to_file()
     
-    # mutual_info = MutualInformationManager()
-    # mutual_info.read_mutual_information_from_file()
+    mutual_info = MutualInformationManager()
+    mutual_info.read_mutual_information_from_file()
