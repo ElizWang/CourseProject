@@ -55,30 +55,22 @@ class TransactionsManager:
             term_ids = []
             for title_term in title.split():
                 term_ids.append(self.__title_terms_mapping[title_term])
-
             self.__papers.append(TransactionsManager.Paper(author_ids, term_ids))
 
         papers_file.close()
     
-    def find_author_pattern_support(self, author_pattern):
+    def find_author_pattern_transactions_ids(self, author_pattern):
         '''
-        Compute the support of a given author pattern wrt the parsed papers
+        Find transactions that have author pattern as a subset
 
         @param:
             author_pattern: Collection(int)     Collection of author ids
         '''
-        support = 0
-        for paper in self.__papers:
-            # NOTE: This wasn't working -- if author_pattern.issubset(paper.authors)
-            # TODO object decomp: this part makes more sense within the Papers class
-            is_subset = True
-            for author in paper.authors:
-                if author not in author_pattern:
-                    is_subset = False
-                    break
-            if is_subset:
-                support += 1
-        return support
+        author_transactions = set()
+        for ind, paper in enumerate(self.__papers):
+            if author_pattern.issubset(paper.authors):
+                author_transactions.add(ind)
+        return author_transactions
 
     def get_number_of_transactions(self):
         '''

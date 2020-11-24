@@ -27,7 +27,7 @@ class MutualInformationManager:
 
     # TODO pass this in as a param, make this code more flexible st we can use it for authors and
     # title patterns
-    AUTHOR_MUTUAL_INFO_FILENAME = os.path.join("data", "author_mutual_info_patterns.txt")
+    AUTHOR_MUTUAL_INFO_FILENAME = os.path.join("data", "test.txt")
 
     def __init__(self, transactions=None, write_to_file_during_computation=False):
         '''
@@ -132,35 +132,41 @@ class MutualInformationManager:
         pattern_x_set = set(pattern_x)
         pattern_y_set = set(pattern_y)
 
-        x_y_intersection_support = self.__transactions.find_author_pattern_support(\
-            pattern_x_set.intersection(pattern_y_set))
-        x_y_union_support = self.__transactions.find_author_pattern_support(\
-            pattern_x_set.union(pattern_y_set))
-        x_support = self.__transactions.find_author_pattern_support(pattern_x_set)
-        y_support = self.__transactions.find_author_pattern_support(pattern_y_set)
+        x_paper_inds = self.__transactions.find_author_pattern_transactions_ids(pattern_x_set)
+        y_paper_inds = self.__transactions.find_author_pattern_transactions_ids(pattern_y_set)
+        x_support = len(x_paper_inds)
+        y_support = len(y_paper_inds)
 
+        x_y_intersection_len = len(x_paper_inds.intersection(y_paper_inds))
+        x_y_union_len = len(x_paper_inds.union(y_paper_inds))
+
+        print(x_y_intersection_len, x_y_union_len, x_support, y_support)
         num_transactions = self.__transactions.get_number_of_transactions()
 
         p_x = x_support / num_transactions
         p_y = y_support / num_transactions
-        p_x_1_y_1 = x_y_intersection_support / num_transactions
-        p_x_0_y_1 = (y_support - x_y_intersection_support) / num_transactions
-        p_x_1_y_0 = (x_support - x_y_intersection_support) / num_transactions
-        p_x_0_y_0 = (num_transactions - x_y_union_support) / num_transactions
+        p_x_1_y_1 = x_y_intersection_len / num_transactions
+        p_x_0_y_1 = (y_support - x_y_intersection_len) / num_transactions
+        p_x_1_y_0 = (x_support - x_y_intersection_len) / num_transactions
+        p_x_0_y_0 = (num_transactions - x_y_union_len) / num_transactions
 
         def compute_mutual_info_given_probs(p_x_y):
-            return (p_x_y + 1) * log2((p_x_y + 1) / ((p_x + 1) * (p_y + 1)))
+            print(p_x_y)
+            return p_x_y * log2(p_x_y / (p_x * p_y))
 
-        return compute_mutual_info_given_probs(p_x_1_y_1) \
+        mi = compute_mutual_info_given_probs(p_x_1_y_1) \
             + compute_mutual_info_given_probs(p_x_0_y_1) \
             + compute_mutual_info_given_probs(p_x_1_y_0) \
             + compute_mutual_info_given_probs(p_x_0_y_0)
+        print(mi)
+        return mi
 
 if __name__ == "__main__":
     transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
     author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
     mutual_info = MutualInformationManager(transactions, True)
-    mutual_info.compute_mutual_information(author_patterns)
-    mutual_info.write_mutual_information_to_file()
+    mutual_info.compute_mutual_information(author_patterns[:10])
+    # mutual_info.write_mutual_information_to_file()
+    
     # mutual_info = MutualInformationManager()
     # mutual_info.read_mutual_information_from_file()
