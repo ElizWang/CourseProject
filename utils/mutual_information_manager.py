@@ -143,21 +143,22 @@ class MutualInformationManager:
         print(x_y_intersection_len, x_y_union_len, x_support, y_support)
         num_transactions = self.__transactions.get_number_of_transactions()
 
-        p_x = x_support / num_transactions
-        p_y = y_support / num_transactions
+        p_x_1 = x_support / num_transactions
+        p_y_1 = y_support / num_transactions
+        p_x_0 = (num_transactions - x_support) / num_transactions
+        p_y_0 = (num_transactions - y_support) / num_transactions
+
         p_x_1_y_1 = x_y_intersection_len / num_transactions
         p_x_0_y_1 = (y_support - x_y_intersection_len) / num_transactions
         p_x_1_y_0 = (x_support - x_y_intersection_len) / num_transactions
         p_x_0_y_0 = (num_transactions - x_y_union_len) / num_transactions
+        
+        mi_x_1_y_1 = p_x_1_y_1 / log2(p_x_1_y_1 / p_x_1 / p_y_1)
+        mi_x_1_y_0 = p_x_1_y_0 / log2(p_x_1_y_0 / p_x_1 / p_y_0)
+        mi_x_0_y_1 = p_x_0_y_1 / log2(p_x_0_y_1 / p_x_0 / p_y_1)
+        mi_x_0_y_0 = p_x_0_y_0 / log2(p_x_0_y_0 / p_x_0 / p_y_0)
 
-        def compute_mutual_info_given_probs(p_x_y):
-            print(p_x_y)
-            return p_x_y * log2(p_x_y / (p_x * p_y))
-
-        mi = compute_mutual_info_given_probs(p_x_1_y_1) \
-            + compute_mutual_info_given_probs(p_x_0_y_1) \
-            + compute_mutual_info_given_probs(p_x_1_y_0) \
-            + compute_mutual_info_given_probs(p_x_0_y_0)
+        mi = mi_x_1_y_1 + mi_x_1_y_0 + mi_x_0_y_1 + mi_x_0_y_0
         print(mi)
         return mi
 
