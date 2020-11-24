@@ -79,7 +79,7 @@ class MutualInformationManager:
         Computes mutual information for pattern indices (a, b) given that a <= b. In other words, it
         computes a triangular matrix of mutual information values bc MI is symmetric
         '''
-        if not transactions:
+        if not self.__transactions:
             print("You can't compute mutual information with a null transactions manager")
             return
 
@@ -124,7 +124,7 @@ class MutualInformationManager:
 
         @return mutual information val, which is represented as a float
         '''
-        if not transactions:
+        if not self.__transactions:
             print("You can't compute mutual information with a null transactions manager")
             return
 
