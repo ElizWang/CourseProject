@@ -51,6 +51,13 @@ class MutualInformationManager:
         print(max(mi))
         print(min(mi))
 
+    def get_mutual_information(self, pattern_index_x, pattern_index_y):
+        if pattern_index_x <= pattern_index_y:
+            ind_tup = (pattern_index_x, pattern_index_y)
+        else:
+            ind_tup = (pattern_index_y, pattern_index_x)
+        return self.__mutual_info_vals[ind_tup]
+
     def __compute_mutual_information(self, pattern_x, pattern_y):
         if not transactions:
             print("You can't compute mutual information with a null transactions manager")
