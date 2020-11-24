@@ -23,10 +23,10 @@ class TransactionsManager:
             # Note: Titles are guaranteed to not have commas
             line_as_lst = line.split(',')
             authors = line_as_lst[ : -1]
-            author_ids = []
+            author_ids = set()
 
             for author in authors:
-                author_ids.append(self.__authors_mapping[author])
+                author_ids.add(self.__authors_mapping[author])
             
             title = line_as_lst[-1]
             term_ids = []
@@ -37,6 +37,22 @@ class TransactionsManager:
 
         papers_file.close()
     
+    def find_author_pattern_support(self, author_pattern):
+        support = 0
+        for paper in self.__papers:
+            # NOTE: This wasn't working -- if author_pattern.issubset(paper.authors)
+            is_subset = True
+            for author in paper.authors:
+                if author not in author_pattern:
+                    is_subset = False
+                    break
+            if is_subset:
+                support += 1
+        return support
+
+    def get_number_of_transactions(self):
+        return len(self.__papers)
+
     @staticmethod
     def __parse_mapping(mapping_filename, mapping):
         mapping_file = open(mapping_filename, "r")
@@ -45,7 +61,7 @@ class TransactionsManager:
             id_word_lst = line.strip().split()
             assert len(id_word_lst) == 2
             assert id_word_lst[1] not in mapping
-            mapping[id_word_lst[1]] = id_word_lst[0]
+            mapping[id_word_lst[1]] = int(id_word_lst[0])
 
         mapping_file.close()
 
