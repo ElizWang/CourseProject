@@ -1,3 +1,5 @@
+import mutual_information_manager
+
 '''
 Encapsulates all papers (aka data.csv) and provides utility methods
 '''
@@ -60,7 +62,31 @@ class TransactionsManager:
             self.__papers.append(TransactionsManager.Paper(author_ids, term_ids))
 
         papers_file.close()
-    
+
+    def compute_author_context_models(self, patterns):
+        '''
+        Computes context models for each paper's authors
+        @param
+            patterns: list(list(int))         List of all frequent author patterns
+        @return
+            context_models: list(list(float)) List of all context models, one per paper
+        '''
+        context_models = []
+
+        num_transactions = self.get_number_of_transactions()
+        for paper_id in range(num_transactions):
+            paper_context_model = []
+
+            for pattern in patterns:
+                paper_authors = self.get_paper_authors(paper_id)
+                mutual_info = \
+                    mutual_information_manager.MutualInformationManager.compute_mutual_information_for_pattern_pair(self, \
+                        pattern, paper_authors)
+                paper_context_model.append(mutual_info)
+
+            context_models.append(paper_context_model)
+        return context_models    
+
     def find_author_pattern_transactions_ids(self, author_pattern):
         '''
         Find transactions that have author pattern as a subset
