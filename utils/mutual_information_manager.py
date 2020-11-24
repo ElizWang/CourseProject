@@ -1,5 +1,5 @@
 from math import log2
-from transactions_manager import TransactionsManager
+import transactions_manager
 from parse_patterns import parse_file_into_patterns
 
 import os
@@ -89,14 +89,32 @@ class MutualInformationManager:
         num_patterns = len(patterns)
         for ind_x, pattern_x in enumerate(patterns):
             for ind_y in range(ind_x, num_patterns):
-                self.__mutual_info_vals[(ind_x, ind_y)] = self.compute_mutual_information_for_pattern_pair(pattern_x, patterns[ind_y])
+                self.__mutual_info_vals[(ind_x, ind_y)] = \
+                    MutualInformationManager.compute_mutual_information_for_pattern_pair(self.__transactions, \
+                        pattern_x, patterns[ind_y])
 
                 if self.__write_to_file_during_computation:
                     mutual_info_file.write("%d %d %f\n" % (ind_x, ind_y, \
                         self.__mutual_info_vals[(ind_x, ind_y)]))
         if self.__write_to_file_during_computation:
             mutual_info_file.close()
-                  
+
+    def get_mutual_information_vector(self, pattern_ind, context_model_dim):
+        '''
+        Gets mutual information vector from precomputed mutual information cache. Assumes that the mutual info matrix has been
+        computed/read in. 
+
+        @param
+            pattern_ind: int              Pattern index to find MI vec for
+            context_model_dim: int        Dimension of context vector
+
+        @return mutual information val, which is represented as list(float)
+        '''
+        mi_vec = []
+        for other_pattern_ind in range(context_model_dim):
+            mi_vec.append(self.get_mutual_information(pattern_ind, other_pattern_ind))
+        return mi_vec
+
     def get_mutual_information(self, pattern_index_x, pattern_index_y):
         '''
         Get precomputed mutual information value given 2 indices. Assumes that the mutual info matrix has been
@@ -114,7 +132,8 @@ class MutualInformationManager:
             ind_tup = (pattern_index_y, pattern_index_x)
         return self.__mutual_info_vals[ind_tup]
 
-    def compute_mutual_information_for_pattern_pair(self, pattern_x, pattern_y):
+    @staticmethod
+    def compute_mutual_information_for_pattern_pair(transaction_manager, pattern_x, pattern_y):
         '''
         Computes mutual information value given patterns using the transaction manager.
 
@@ -124,7 +143,7 @@ class MutualInformationManager:
 
         @return mutual information val, which is represented as a float
         '''
-        if not self.__transactions:
+        if not transaction_manager:
             print("You can't compute mutual information with a null transactions manager")
             return
 
@@ -132,15 +151,15 @@ class MutualInformationManager:
         pattern_x_set = set(pattern_x)
         pattern_y_set = set(pattern_y)
 
-        x_paper_inds = self.__transactions.find_author_pattern_transactions_ids(pattern_x_set)
-        y_paper_inds = self.__transactions.find_author_pattern_transactions_ids(pattern_y_set)
+        x_paper_inds = transaction_manager.find_author_pattern_transactions_ids(pattern_x_set)
+        y_paper_inds = transaction_manager.find_author_pattern_transactions_ids(pattern_y_set)
         x_support = len(x_paper_inds)
         y_support = len(y_paper_inds)
 
         x_y_intersection_len = len(x_paper_inds.intersection(y_paper_inds))
         x_y_union_len = len(x_paper_inds.union(y_paper_inds))
 
-        num_transactions = self.__transactions.get_number_of_transactions()
+        num_transactions = transaction_manager.get_number_of_transactions()
 
         SMOOTHING_FACTOR = 0.001
         def get_smoothed_probability(num, denom):
@@ -168,11 +187,11 @@ class MutualInformationManager:
         return mi_x_1_y_1 + mi_x_1_y_0 + mi_x_0_y_1 + mi_x_0_y_0
 
 if __name__ == "__main__":
-    transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
-    author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
-    mutual_info = MutualInformationManager(transactions, True)
-    mutual_info.compute_mutual_information(author_patterns)
+    #transactions = transactions_manager.TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
+    #author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
+    #mutual_info = MutualInformationManager(transactions, True)
+    #mutual_info.compute_mutual_information(author_patterns)
     # mutual_info.write_mutual_information_to_file()
     
-    # mutual_info = MutualInformationManager()
-    # mutual_info.read_mutual_information_from_file()
+    mutual_info = MutualInformationManager()
+    mutual_info.read_mutual_information_from_file()
