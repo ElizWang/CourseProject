@@ -87,6 +87,26 @@ class TransactionsManager:
             context_models.append(paper_context_model)
         return context_models
 
+    def find_title_pattern_transactions_ids(self, title_pattern):
+        '''
+        Find transactions that have title pattern as a subset
+
+        @param:
+            title_pattern: list(int)     Ordered list of title ids
+        '''
+        # https://stackoverflow.com/questions/24017363/how-to-test-if-one-string-is-a-subsequence-of-another
+        def is_subseq(x, y):
+            it = iter(y)
+            return all(any(c == ch for c in it) for ch in x)
+
+        title_transactions = set()
+        for ind, paper in enumerate(self.__papers):
+            # Title patterns are sequential so we need to ensure that the order is there
+            # Check that the title is a subsequence of paper.title
+            if is_subseq(title_pattern, paper.title):
+                title_transactions.add(ind)
+        return title_transactions
+
     def find_author_pattern_transactions_ids(self, author_pattern):
         '''
         Find transactions that have author pattern as a subset
