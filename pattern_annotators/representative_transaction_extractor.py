@@ -46,62 +46,64 @@ class RepresentativeTransactionExtractor:
         self.__num_transactions = num_transactions
         self.__is_author = is_author
 
-    def find_representative_transactions(self):
+    def find_representative_transactions(self, pattern_id, k):
         '''
         Finds the top num_transactions representative transactions for each pattern inputted in the constructor
 
-        @return a map of (int, list(int)), where key = index of the pattern and value = a list of all 
-            indices (aka ids) of the papers ordered from most representative to least representative and of
-            size num_transactions
+        @param pattern_id int:
+            id for which we are trying to find semantically similar patterns for
+        @param k int:
+            number of semantically similar patterns to find
+        @return list(int):
+            k most semantically similar patterns, sorted in decreasing similarity
         '''
         paper_context_models = self.__transaction_manager.compute_author_context_models(self.__patterns)
         context_model_dim = len(self.__patterns)
 
         similarities_max_q = []
-        repr_transactions = {}
 
-        for pattern_ind in range(context_model_dim):
-            # Read in the context model vector
-            pattern_context_model = self.__mutual_info_manager.get_mutual_information_vector(pattern_ind, context_model_dim)
+        # Read in the context model vector
+        pattern_context_model = self.__mutual_info_manager.get_mutual_information_vector(pattern_id, context_model_dim)
 
-            for transaction_ind, transaction_vec in enumerate(paper_context_models):
-                cosine_sim = compute_cosine_similarity(pattern_context_model, transaction_vec)
-                # Negate cosine sim bc we want to implement max heap and heapq == min heap
-                heapq.heappush(similarities_max_q, RepresentativeTransactionExtractor.TransactionSimilarity(cosine_sim, transaction_ind))             
+        for transaction_ind, transaction_vec in enumerate(paper_context_models):
+            cosine_sim = compute_cosine_similarity(pattern_context_model, transaction_vec)
+            heapq.heappush(similarities_max_q, RepresentativeTransactionExtractor.TransactionSimilarity(cosine_sim, transaction_ind))             
 
-            pattern_transactions = []
-            for _ in range(self.__num_transactions):
-                transaction_ind = heapq.heappop(similarities_max_q).transaction_ind
-                pattern_transactions.append(transaction_ind)
-            repr_transactions[pattern_ind] = pattern_transactions
-        return repr_transactions
+        pattern_transactions = []
+        for _ in range(self.__num_transactions):
+            transaction_ind = heapq.heappop(similarities_max_q).transaction_ind
+            pattern_transactions.append(transaction_ind)
+        return pattern_transactions
 
-    def display_pretty(self, repr_transactions):
+    def display_pretty(self, pattern_id, top_transactions):
         '''
         Prints the representative transactions out per pattern. All patterns and transactions are represented
         as words rather than their ids.
 
         @param
-        repr_transactions dict(int, list(int)):       representative transactions
-            key = index of the pattern and value = a list of all 
-            indices (aka ids) of the papers ordered from most representative to least representative and of
-            size num_transactions
+        top_patterns list(int):             ids of patterns to print out
+        top_transactions list(int):         list of all indices (aka ids) of the papers ordered from
+            most representative to least representative and of size num_transactions
         '''
-        for pattern_ind in repr_transactions:
-            pattern = self.__patterns[pattern_ind]
-            pattern_words = [self.__transaction_manager.get_author_name(word_id) for word_id in pattern]
-            print("Pattern: %s" % ' '.join(pattern_words))
+        pattern = self.__patterns[pattern_id]
+        pattern_words = [self.__transaction_manager.get_author_name(word_id) for word_id in pattern]
+        print("Input pattern: %s" % ' '.join(pattern_words))
 
-            pattern_transactions = repr_transactions[pattern_ind]
-            for transaction_ind in pattern_transactions:
-                transaction_title_ids = self.__transaction_manager.get_paper_title_terms(transaction_ind)
-                transaction_title_words = [self.__transaction_manager.get_title_term(word_id) \
-                    for word_id in transaction_title_ids]
-                print("Most representative transaction %d: %s" % \
-                    (transaction_ind, ' '.join(transaction_title_words)))
-            print()
+        for transaction_ind in top_transactions:
+            transaction_title_ids = self.__transaction_manager.get_paper_title_terms(transaction_ind)
+            transaction_title_words = [self.__transaction_manager.get_title_term(word_id) \
+                for word_id in transaction_title_ids]
+            print("Most representative transaction %d: %s" % \
+                (transaction_ind, ' '.join(transaction_title_words)))
+        print()
 
 if __name__ == "__main__":
+    '''
+    Usage: py pattern_annotators/representative_transaction_extractor.py [target_id] [k]
+    '''
+    target_id = int(sys.argv[1])
+    k = int(sys.argv[2])
+
     mutual_info = MutualInformationManager(MutualInformationManager.PatternType.AUTHOR_AUTHOR)
     mutual_info.read_mutual_information_from_file()    
 
@@ -109,5 +111,5 @@ if __name__ == "__main__":
     author_patterns = parse_author_file_into_patterns("data/frequent_author_patterns.txt")
     
     extractor = RepresentativeTransactionExtractor(transactions, mutual_info, author_patterns, 3, True)
-    repr_transactions = extractor.find_representative_transactions()
-    extractor.display_pretty(repr_transactions)
+    repr_transactions = extractor.find_representative_transactions(target_id, k)
+    extractor.display_pretty(target_id, repr_transactions)
