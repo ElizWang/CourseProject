@@ -89,6 +89,6 @@ if __name__ == '__main__':
     transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")
     author_patterns = parse_author_file_into_patterns("data/frequent_author_patterns.txt")
 
-    extractor =  SemanticallySimilarPatternExtractor(mutual_info, transactions, author_patterns[:4])
+    extractor =  SemanticallySimilarPatternExtractor(mutual_info, transactions, author_patterns)
     strongest_similarity = extractor.find_semantically_similar_patterns(target_id, k)
     extractor.pretty_print(target_id, strongest_similarity)
