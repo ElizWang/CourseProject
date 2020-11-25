@@ -30,7 +30,7 @@ class RepresentativeTransactionExtractor:
         def __eq__(self, other): 
             return self.cosine_sim == other.cosine_sim
 
-    def __init__(self, transaction_mananger, mutual_info_manager, patterns, pattern_type, num_transactions, is_author):
+    def __init__(self, transaction_mananger, mutual_info_manager, patterns, pattern_type, num_transactions):
         '''
         @param
             transaction_mananger: TransactionsManager       Object storing all transactions (every line from data.csv)
@@ -38,7 +38,6 @@ class RepresentativeTransactionExtractor:
             patterns: list(list(int))                       List of all SSP patterns
             pattern_type: PatternType                       Type of pattern pairs to compute MI for
             num_transactions: int                           Top k most representative transactions to find
-            is_author: bool                                 True if SSP == authors, false otherwise
         '''
         self.__transaction_manager = transaction_mananger
         self.__mutual_info_manager = mutual_info_manager
@@ -49,7 +48,6 @@ class RepresentativeTransactionExtractor:
         self.__pattern_type = pattern_type
 
         self.__num_transactions = num_transactions
-        self.__is_author = is_author
 
     def find_representative_transactions(self, pattern_id, k):
         '''
@@ -133,24 +131,28 @@ class RepresentativeTransactionExtractor:
 
 if __name__ == "__main__":
     '''
-    Usage: py pattern_annotators/representative_transaction_extractor.py [target_id] [k]
+    Usage: py pattern_annotators/representative_transaction_extractor.py [target_id] [k] [is author experiment]
     '''
     target_id = int(sys.argv[1])
     k = int(sys.argv[2])
-
-    mutual_info = MutualInformationManager(MutualInformationManager.PatternType.AUTHOR_AUTHOR)
-    mutual_info.read_mutual_information_from_file()    
-
+    is_auth_experiment = sys.argv[3] == "True"
+    
     transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
-    author_patterns = parse_author_file_into_patterns("data/frequent_author_patterns.txt")
-    title_patterns = parse_sequential_title_file_into_patterns("data/minimal_title_term_patterns.txt")
     
-    '''
-    extractor = RepresentativeTransactionExtractor(transactions, mutual_info, author_patterns, \
-        MutualInformationManager.PatternType.AUTHOR_AUTHOR, 3, True)
-    '''
-    extractor = RepresentativeTransactionExtractor(transactions, mutual_info, title_patterns, \
-        MutualInformationManager.PatternType.TITLE_TITLE, 3, True)
-    
+    if is_auth_experiment:
+        mutual_info = MutualInformationManager(MutualInformationManager.PatternType.AUTHOR_AUTHOR)
+        mutual_info.read_mutual_information_from_file()    
+
+        author_patterns = parse_author_file_into_patterns("data/frequent_author_patterns.txt")
+        extractor = RepresentativeTransactionExtractor(transactions, mutual_info, author_patterns, \
+            MutualInformationManager.PatternType.AUTHOR_AUTHOR, k)
+    else:
+        mutual_info = MutualInformationManager(MutualInformationManager.PatternType.TITLE_TITLE)
+        mutual_info.read_mutual_information_from_file()    
+
+        title_patterns = parse_sequential_title_file_into_patterns("data/minimal_title_term_patterns.txt")
+        extractor = RepresentativeTransactionExtractor(transactions, mutual_info, title_patterns, \
+            MutualInformationManager.PatternType.TITLE_TITLE, k)
+
     repr_transactions = extractor.find_representative_transactions(target_id, k)
     extractor.display_pretty(target_id, repr_transactions)
