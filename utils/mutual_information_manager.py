@@ -25,21 +25,40 @@ Note: We're storing one MI value per pair of AUTHOR pattern indices.
 '''
 class MutualInformationManager:
 
+    class PatternType:
+        AUTHOR_AUTHOR = 0
+        AUTHOR_TITLE = 1
+        TITLE_TITLE = 2
+
     # TODO pass this in as a param, make this code more flexible st we can use it for authors and
     # title patterns
-    AUTHOR_MUTUAL_INFO_FILENAME = os.path.join("data", "author_mutual_info_patterns.txt")
+    AUTHOR_AUTHOR_MUTUAL_INFO_FILENAME = os.path.join("data", "author_author_mutual_info_patterns.txt")
+    AUTHOR_TITLE_MUTUAL_INFO_FILENAME = os.path.join("data", "author_title_mutual_info_patterns.txt")
+    TITLE_TITLE_MUTUAL_INFO_FILENAME = os.path.join("data", "title_title_mutual_info_patterns.txt")
 
-    def __init__(self, transactions=None, write_to_file_during_computation=False):
+    def __init__(self, pattern_type, transactions=None, write_to_file_during_computation=False):
         '''
         @param
+            pattern_type: PatternType               type of pattern pairs to compute MI for
             transactions: TransactionManager        transaction manager storing parsed paper data
             write_to_file_during_computation: bool  true to write to MI file when computing MIs, else false
         '''
         # Dictionary of (pattern index a, pattern index b) pairs where
         # a <= b (aka a triangular matrix)
         self.__mutual_info_vals = {}
+        self.__pattern_type = pattern_type
         self.__transactions = transactions
         self.__write_to_file_during_computation = write_to_file_during_computation
+
+        if pattern_type == MutualInformationManager.PatternType.AUTHOR_AUTHOR:
+            self.__filename =  MutualInformationManager.AUTHOR_AUTHOR_MUTUAL_INFO_FILENAME
+        elif pattern_type == MutualInformationManager.PatternType.AUTHOR_TITLE:
+            self.__filename =  MutualInformationManager.AUTHOR_TITLE_MUTUAL_INFO_FILENAME
+        elif pattern_type == MutualInformationManager.PatternType.TITLE_TITLE:
+            self.__filename =  MutualInformationManager.TITLE_TITLE_MUTUAL_INFO_FILENAME
+        else:
+            print("ERROR: Invalid pattern type")
+            assert False
 
     def read_mutual_information_from_file(self):
         '''
@@ -47,7 +66,7 @@ class MutualInformationManager:
         class stores. Note that it assumes that the first pattern index is <= the second pattern index
         (aka that it was generated using this file)
         '''
-        mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "r")
+        mutual_info_file = open(self.__filename, "r")
         for line in mutual_info_file:
             mutual_info_lst = line.strip().split()
             assert len(mutual_info_lst) == 3
@@ -68,27 +87,41 @@ class MutualInformationManager:
             return
 
         # Format: pattern_ind_1 pattern_ind_2 MI
-        mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "w")
+        mutual_info_file = open(self.__pattern_type, "w")
         for pattern_ind_x, pattern_ind_y in self.__mutual_info_vals:
             mutual_info_file.write("%d %d %f\n" % (pattern_ind_x, pattern_ind_y, \
                 self.__mutual_info_vals[(pattern_ind_x, pattern_ind_y)]))
         mutual_info_file.close()
 
-    def compute_mutual_information(self, patterns):
+    def compute_mutual_information(self, patterns, secondary_patterns=None):
         '''
         Computes mutual information for pattern indices (a, b) given that a <= b. In other words, it
         computes a triangular matrix of mutual information values bc MI is symmetric
+
+        @param
+            patterns: list(list(int))               List of patterns to compute MI over
+            secondary_patterns: list(list(int))?    List of secondary patterns to compute MI over if 
+                    patterns != secondary patterns (then, we'd compute the MI for each (pattern, secondary pattern)
+                    pair). Only non-null if pattern type is AUTHOR_TITLE
         '''
         if not self.__transactions:
-            print("You can't compute mutual information with a null transactions manager")
-            return
+            print("ERROR: You can't compute mutual information with a null transactions manager")
+            exit(1)
+
+        if secondary_patterns and self.__pattern_type != MutualInformationManager.PatternType.AUTHOR_TITLE:
+            print("ERROR: You can only pass in a secondary pattern list if the Pattern Type is AUTHOR_TITLE")
+            exit(1)
 
         if self.__write_to_file_during_computation:
-            mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "w")
+            mutual_info_file = open(self.__filename, "w")
 
-        num_patterns = len(patterns)
         for ind_x, pattern_x in enumerate(patterns):
-            for ind_y in range(ind_x, num_patterns):
+            if self.__pattern_type == MutualInformationManager.PatternType.AUTHOR_TITLE:
+                pattern_itr = range(len(secondary_patterns))
+            else:
+                pattern_itr = range(ind_x, len(patterns))
+
+            for ind_y in pattern_itr:
                 self.__mutual_info_vals[(ind_x, ind_y)] = \
                     MutualInformationManager.compute_mutual_information_for_pattern_pair(self.__transactions, \
                         pattern_x, patterns[ind_y])
@@ -189,7 +222,7 @@ class MutualInformationManager:
 if __name__ == "__main__":
     transactions = transactions_manager.TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
     author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
-    mutual_info = MutualInformationManager(transactions, True)
+    mutual_info = MutualInformationManager(MutualInformationManager.PatternType.AUTHOR_AUTHOR, transactions, True)
     mutual_info.compute_mutual_information(author_patterns)
     
     #mutual_info = MutualInformationManager()
