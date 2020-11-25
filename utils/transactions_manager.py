@@ -63,9 +63,34 @@ class TransactionsManager:
 
         papers_file.close()
 
+    def compute_title_context_models(self, patterns):
+        '''
+        Computes context models for each paper's title terms against title patterns
+        @param
+            patterns: list(list(int))         List of all frequent title patterns
+        @return
+            context_models: list(list(float)) List of all context models, one per paper
+        '''
+        context_models = []
+
+        num_transactions = self.get_number_of_transactions()
+        for paper_id in range(num_transactions):
+            paper_context_model = []
+
+            for pattern in patterns:
+                paper_titles = self.get_paper_title_terms(paper_id)
+                mutual_info = \
+                    mutual_information_manager.MutualInformationManager.compute_mutual_information_for_pattern_pair(self, \
+                        mutual_information_manager.MutualInformationManager.PatternType.TITLE_TITLE, \
+                             pattern, paper_titles)
+                paper_context_model.append(mutual_info)
+
+            context_models.append(paper_context_model)
+        return context_models
+
     def compute_author_context_models(self, patterns):
         '''
-        Computes context models for each paper's authors
+        Computes context models for each paper's authors against author patterns
         @param
             patterns: list(list(int))         List of all frequent author patterns
         @return
