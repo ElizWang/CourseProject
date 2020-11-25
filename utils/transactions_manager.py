@@ -63,9 +63,34 @@ class TransactionsManager:
 
         papers_file.close()
 
+    def compute_title_context_models(self, patterns):
+        '''
+        Computes context models for each paper's title terms against title patterns
+        @param
+            patterns: list(list(int))         List of all frequent title patterns
+        @return
+            context_models: list(list(float)) List of all context models, one per paper
+        '''
+        context_models = []
+
+        num_transactions = self.get_number_of_transactions()
+        for paper_id in range(num_transactions):
+            paper_context_model = []
+
+            for pattern in patterns:
+                paper_titles = self.get_paper_title_terms(paper_id)
+                mutual_info = \
+                    mutual_information_manager.MutualInformationManager.compute_mutual_information_for_pattern_pair(self, \
+                        mutual_information_manager.MutualInformationManager.PatternType.TITLE_TITLE, \
+                             pattern, paper_titles)
+                paper_context_model.append(mutual_info)
+
+            context_models.append(paper_context_model)
+        return context_models
+
     def compute_author_context_models(self, patterns):
         '''
-        Computes context models for each paper's authors
+        Computes context models for each paper's authors against author patterns
         @param
             patterns: list(list(int))         List of all frequent author patterns
         @return
@@ -81,11 +106,32 @@ class TransactionsManager:
                 paper_authors = self.get_paper_authors(paper_id)
                 mutual_info = \
                     mutual_information_manager.MutualInformationManager.compute_mutual_information_for_pattern_pair(self, \
-                        pattern, paper_authors)
+                        mutual_information_manager.MutualInformationManager.PatternType.AUTHOR_AUTHOR, \
+                             pattern, paper_authors)
                 paper_context_model.append(mutual_info)
 
             context_models.append(paper_context_model)
         return context_models
+
+    def find_title_pattern_transactions_ids(self, title_pattern):
+        '''
+        Find transactions that have title pattern as a subset
+
+        @param:
+            title_pattern: list(int)     Ordered list of title ids
+        '''
+        # https://stackoverflow.com/questions/24017363/how-to-test-if-one-string-is-a-subsequence-of-another
+        def is_subseq(x, y):
+            it = iter(y)
+            return all(any(c == ch for c in it) for ch in x)
+
+        title_transactions = set()
+        for ind, paper in enumerate(self.__papers):
+            # Title patterns are sequential so we need to ensure that the order is there
+            # Check that the title is a subsequence of paper.title
+            if is_subseq(title_pattern, paper.title):
+                title_transactions.add(ind)
+        return title_transactions
 
     def find_author_pattern_transactions_ids(self, author_pattern):
         '''
