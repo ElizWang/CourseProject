@@ -49,8 +49,8 @@ class StrongestContextIndicatorExtractor:
         '''
         mutual_info_vector = self.__mutual_info_manager.get_mutual_information_vector(pattern_id, len(self.__patterns))
         strongest_context_indicators = []
-        for id in range(1, len(mutual_info_vector) + 1):
-            heapq.heappush(strongest_context_indicators, StrongestContextIndicatorExtractor.ContextIndicatorHeapEntry(id, mutual_info_vector[id - 1]))
+        for id in range(len(mutual_info_vector)):
+            heapq.heappush(strongest_context_indicators, StrongestContextIndicatorExtractor.ContextIndicatorHeapEntry(id, mutual_info_vector[id]))
 
         ids = []
         for index in range(k):
@@ -58,16 +58,21 @@ class StrongestContextIndicatorExtractor:
             ids.append(top_entry_id)
         return ids
 
-    def pretty_print(self, target_author_id, top_patterns):
-        '''
-        Takes in a list of pattern ids and converts them to author names.
+    def pretty_print(self, pattern_id, top_patterns):
+            '''
+            Takes in a list of pattern ids and converts them to printed patterns.
 
-        @param top_patterns list(int):
-            ids of author names to print out
-        '''
-        print('Strongest context indicator for author ' + self.__transaction_manager.get_author_name(target_author_id) + ':')
-        for pattern_id in top_patterns:
-            print(self.__transaction_manager.get_author_name(pattern_id))
+            @param top_patterns list(int):
+                ids of patterns to print out
+            '''
+            pattern = self.__patterns[pattern_id]
+            pattern_words = [self.__transaction_manager.get_author_name(word_id) for word_id in pattern]
+            print("Input pattern: %s" % ' '.join(pattern_words))
+
+            for top_pattern_id in top_patterns:
+                top_pattern = self.__patterns[top_pattern_id]
+                top_pattern_words = [self.__transaction_manager.get_author_name(word_id) for word_id in top_pattern]
+                print("Pattern: %s" % ' '.join(top_pattern_words))
 
 if __name__ == '__main__':
     '''
