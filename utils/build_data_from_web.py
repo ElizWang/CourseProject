@@ -101,14 +101,13 @@ class DataSetBuilder:
             author_spans = citation.find_all('span', {'itemprop': 'author'})
             authors = []
             for author_span in author_spans:
-                authors.append(author_span.find('span', {'itemprop': 'name'})['title'])
+                authors.append(author_span.find('span', {'itemprop': 'name'})['title'].lower())
 
             raw_title = citation.find('span', {'class': 'title'}).string
             if not authors or not raw_title:
                 continue
-            title_no_spaces_commas = raw_title.replace(",", " ").replace(".", "")
+            title_no_spaces_commas = raw_title.replace(",", " ").replace(".", "").lower()
             stemmed_title = ' '.join([self.__stemmer.stem(word) for word in title_no_spaces_commas.split()])
-
             author_title_info.append( (authors, stemmed_title) )
         # Skip zeroth author/title tuple because it corresponds to the title of the EVENT 
         # and the hosts of the event, rather than a specific paper
