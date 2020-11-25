@@ -3,7 +3,7 @@ import os
 sys.path.insert(1, os.path.join('utils', 'frequent_pattern_mining'))
 
 from build_frequent_patterns import FrequentPatternBuilder
-from parse_patterns import parse_file_into_patterns, write_patterns_to_file
+from parse_patterns import parse_author_file_into_patterns, write_patterns_to_file
 
 '''
 Utility methods for 
@@ -185,6 +185,6 @@ def find_one_pass_microclustering_patterns(patterns, dist_thresh = 0.9):
     return min_intra_dist_patterns
 
 if __name__ == "__main__":
-    title_patterns = parse_file_into_patterns(FrequentPatternBuilder.TITLE_TERMS_OUTPUT_FILE_PATH)
+    title_patterns = parse_author_file_into_patterns(FrequentPatternBuilder.TITLE_TERMS_OUTPUT_FILE_PATH)
     minimal_patterns = find_one_pass_microclustering_patterns(title_patterns, 0.6)
     write_patterns_to_file(MINIMAL_TITLE_TERMS_FILENAME, minimal_patterns)

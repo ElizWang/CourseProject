@@ -1,4 +1,4 @@
-def parse_file_into_patterns(pattern_file_name):
+def parse_author_file_into_patterns(pattern_file_name):
     '''
     Parse a file generated via build_frequent_patterns.py into a list of patterns
     
