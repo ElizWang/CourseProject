@@ -78,7 +78,10 @@ class MutualInformationManager:
                 assert pattern_type == MutualInformationManager.PatternType.AUTHOR_AUTHOR \
                     or pattern_type == MutualInformationManager.PatternType.AUTHOR_TITLE \
                         or pattern_type == MutualInformationManager.PatternType.TITLE_TITLE
+
                 self.__pattern_type = pattern_type
+                is_first = False
+                continue
 
             mutual_info_lst = line.strip().split()
             assert len(mutual_info_lst) == 3
@@ -261,8 +264,11 @@ if __name__ == "__main__":
     transactions = transactions_manager.TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
     author_patterns = parse_author_file_into_patterns("data/frequent_author_patterns.txt")
     title_patterns = parse_sequential_title_file_into_patterns("data/minimal_title_term_patterns.txt")
-    mutual_info = MutualInformationManager(MutualInformationManager.PatternType.AUTHOR_TITLE, transactions, True)
-    mutual_info.compute_mutual_information(author_patterns, title_patterns)
-    
+    #mutual_info = MutualInformationManager(MutualInformationManager.PatternType.AUTHOR_TITLE, transactions, True)
+    #mutual_info.compute_mutual_information(author_patterns, title_patterns)
+
+    mutual_info = MutualInformationManager(MutualInformationManager.PatternType.AUTHOR_AUTHOR, transactions, True)
+    mutual_info.compute_mutual_information(author_patterns)
+
     #mutual_info = MutualInformationManager()
     #mutual_info.read_mutual_information_from_file()

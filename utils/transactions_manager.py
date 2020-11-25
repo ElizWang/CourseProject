@@ -81,7 +81,8 @@ class TransactionsManager:
                 paper_authors = self.get_paper_authors(paper_id)
                 mutual_info = \
                     mutual_information_manager.MutualInformationManager.compute_mutual_information_for_pattern_pair(self, \
-                        pattern, paper_authors)
+                        mutual_information_manager.MutualInformationManager.PatternType.AUTHOR_AUTHOR, \
+                             pattern, paper_authors)
                 paper_context_model.append(mutual_info)
 
             context_models.append(paper_context_model)

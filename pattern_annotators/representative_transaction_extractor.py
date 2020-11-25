@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "utils"))
 
 from transactions_manager import TransactionsManager
 from mutual_information_manager import MutualInformationManager
-from parse_patterns import parse_file_into_patterns
+from parse_patterns import parse_author_file_into_patterns
 from cosine_similarity import compute_cosine_similarity
 
 '''
@@ -102,11 +102,11 @@ class RepresentativeTransactionExtractor:
             print()
 
 if __name__ == "__main__":
-    mutual_info = MutualInformationManager()
+    mutual_info = MutualInformationManager(MutualInformationManager.PatternType.AUTHOR_AUTHOR)
     mutual_info.read_mutual_information_from_file()    
 
     transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
-    author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
+    author_patterns = parse_author_file_into_patterns("data/frequent_author_patterns.txt")
     
     extractor = RepresentativeTransactionExtractor(transactions, mutual_info, author_patterns, 3, True)
     repr_transactions = extractor.find_representative_transactions()
