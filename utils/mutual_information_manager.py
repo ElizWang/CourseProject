@@ -76,12 +76,14 @@ class MutualInformationManager:
         for line in mutual_info_file:
             if is_first:
                 pattern_type = int(line.strip())
-                assert pattern_type == MutualInformationManager.PatternType.AUTHOR_AUTHOR \
-                    or pattern_type == MutualInformationManager.PatternType.AUTHOR_TITLE \
-                        or pattern_type == MutualInformationManager.PatternType.TITLE_AUTHOR \
-                            or pattern_type == MutualInformationManager.PatternType.TITLE_TITLE
 
-                self.__pattern_type = pattern_type
+                if self.__pattern_type == MutualInformationManager.PatternType.AUTHOR_AUTHOR \
+                    or self.__pattern_type == MutualInformationManager.PatternType.TITLE_TITLE:
+                    assert pattern_type == self.__pattern_type
+                elif pattern_type == MutualInformationManager.PatternType.TITLE_AUTHOR \
+                    or pattern_type == MutualInformationManager.PatternType.AUTHOR_TITLE:
+                    assert pattern_type == MutualInformationManager.PatternType.AUTHOR_TITLE
+
                 is_first = False
                 continue
 
@@ -144,7 +146,8 @@ class MutualInformationManager:
             mutual_info_file.write("%d\n" % self.__pattern_type)
 
         for ind_x, pattern_x in enumerate(patterns):
-            if self.__pattern_type == MutualInformationManager.PatternType.AUTHOR_TITLE:
+            if self.__pattern_type == MutualInformationManager.PatternType.AUTHOR_TITLE \
+                or self.__pattern_type == MutualInformationManager.PatternType.TITLE_AUTHOR:
                 pattern_itr = range(len(secondary_patterns))
             else:
                 pattern_itr = range(ind_x, len(patterns))
@@ -173,6 +176,7 @@ class MutualInformationManager:
         @return mutual information val, which is represented as list(float)
         '''
         mi_vec = []
+
         for other_pattern_ind in range(context_model_dim):
             # TITLE-AUTH and AUTH-TITle = implemented in the same way, so we need to swap the indices here when calling 
             # get_mutual_information
