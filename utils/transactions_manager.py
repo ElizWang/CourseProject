@@ -46,7 +46,10 @@ class TransactionsManager:
 
         self.__papers = []
 
+        i=0
         for line in papers_file:
+            i+=1
+            if i == 11:break
             # Note: Titles are guaranteed to not have commas
             line_as_lst = line.split(',')
             authors = line_as_lst[ : -1]
