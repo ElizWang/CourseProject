@@ -9,10 +9,6 @@ from mutual_information_manager import MutualInformationManager
 from parse_patterns import parse_file_into_patterns
 from cosine_similarity import compute_cosine_similarity
 
-'''
-It does the thing
-'''
-
 class StrongestContextIndicatorExtractor:
     # From: https://stackoverflow.com/questions/2501457/what-do-i-use-for-a-max-heap-implementation-in-python
     class ContextIndicatorHeapEntry(object):
