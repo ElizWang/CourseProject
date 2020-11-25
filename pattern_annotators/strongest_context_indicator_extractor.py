@@ -107,9 +107,9 @@ if __name__ == '__main__':
         mutual_info = MutualInformationManager(MutualInformationManager.PatternType.TITLE_TITLE)
         mutual_info.read_mutual_information_from_file()
 
-        author_patterns = parse_author_file_into_patterns("data/frequent_author_patterns.txt")
-        extractor = StrongestContextIndicatorExtractor(mutual_info, transactions, author_patterns, \
-            MutualInformationManager.PatternType.AUTHOR_AUTHOR)
+        title_patterns = parse_sequential_title_file_into_patterns("data/minimal_title_term_patterns.txt")
+        extractor = StrongestContextIndicatorExtractor(mutual_info, transactions, title_patterns, \
+            MutualInformationManager.PatternType.TITLE_TITLE)
     
     strongest_indicators = extractor.find_strongest_context_indicators(target_id, k)
     extractor.pretty_print(target_id, strongest_indicators)
