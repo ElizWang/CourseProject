@@ -1,6 +1,6 @@
 def parse_author_file_into_patterns(pattern_file_name):
     '''
-    Parse a file generated via build_frequent_patterns.py into a list of patterns
+    Parse an author file generated via build_frequent_patterns.py into a list of patterns
     
     @param pattern_file_name: string    Input file name
         Format assumption: item_id_1 item_id_2 item_id_3 #SUP support
@@ -16,6 +16,32 @@ def parse_author_file_into_patterns(pattern_file_name):
         assert sup_ind != -1
         pattern_lst = line[ : sup_ind].split()
         patterns.append([int(item) for item in pattern_lst])
+
+    pattern_file.close()
+    return patterns
+
+def parse_sequential_title_file_into_patterns(pattern_file_name):
+    '''
+    Parse a title file generated via build_frequent_patterns.py into a list of patterns
+    
+    @param pattern_file_name: string    Input file name
+        Format assumption: item_id_1 item_id_2 item_id_3 #SUP support
+        One pattern/line
+    @return list(list(int)), representing all patterns parsed from file where each inner list
+        is a pattern of item ids (recall that words are being mapped to integer ids)
+    '''
+    pattern_file = open(pattern_file_name, "r")
+    
+    patterns = []
+    for line in pattern_file:
+        pattern_lst = line.split()
+        pattern = []        
+
+        for item in pattern_lst:
+            item = int(item)
+            if item != -1:
+                pattern.append(item)
+        patterns.append(pattern)
 
     pattern_file.close()
     return patterns
