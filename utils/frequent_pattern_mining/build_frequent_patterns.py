@@ -28,7 +28,7 @@ class FrequentPatternBuilder():
     AUTHOR_ID_FILE_PATH = "data/author_id_mappings.txt"
     TITLE_TERM_ID_FILE_PATH = "data/title_term_id_mappings.txt"
 
-    def __init__(self, fp_close_thresh=0.05, clospan_thresh=0.075, display_transaction_nums=False):
+    def __init__(self, fp_close_thresh=0.08, clospan_thresh=0.3, display_transaction_nums=False):
         '''
         @param fp_close_thresh          Min relative (percentage) support for FPClose
         @param clospan_thresh           Min relative (percentage) support for CloSpan

@@ -186,5 +186,5 @@ def find_one_pass_microclustering_patterns(patterns, dist_thresh = 0.9):
 
 if __name__ == "__main__":
     title_patterns = parse_file_into_patterns(FrequentPatternBuilder.TITLE_TERMS_OUTPUT_FILE_PATH)
-    minimal_patterns = find_one_pass_microclustering_patterns(title_patterns, 0.5)
+    minimal_patterns = find_one_pass_microclustering_patterns(title_patterns, 0.6)
     write_patterns_to_file(MINIMAL_TITLE_TERMS_FILENAME, minimal_patterns)
