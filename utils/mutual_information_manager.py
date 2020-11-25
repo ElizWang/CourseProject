@@ -178,7 +178,7 @@ class MutualInformationManager:
         def compute_mutual_information_for_pattern_pair(p_x_y, p_x, p_y):
             #if p_x_y == 0:
             #    return 0
-            return p_x_y / log2(p_x_y / p_x / p_y)
+            return p_x_y * log2(p_x_y / p_x / p_y)
 
         mi_x_1_y_1 = compute_mutual_information_for_pattern_pair(p_x_1_y_1, p_x_1, p_y_1)
         mi_x_1_y_0 = compute_mutual_information_for_pattern_pair(p_x_1_y_0, p_x_1, p_y_0)
