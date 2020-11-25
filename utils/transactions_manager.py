@@ -14,7 +14,7 @@ class TransactionsManager:
             @param
                 authors: Collection(int)    Collection of author ids
                 title: list(int)            Ordered list of title word ids
-            
+
             IMPORTANT: Both collections must store integers (to correctly compute the
             support of a certain pattern)
             '''
@@ -32,8 +32,8 @@ class TransactionsManager:
             authors_mapping_filename: string        file path to author-id mapping file
             title_terms_mapping_filename: string    file path to title term-id mapping file
         '''
-        papers_file = open(papers_file_name, "r")
-        
+        papers_file = open(papers_file_name, "r", encoding='utf-8')
+
         self.__authors_id_mapping = {}
         self.__id_authors_mapping = {}
         TransactionsManager.__parse_mapping(authors_mapping_filename, \
@@ -54,7 +54,7 @@ class TransactionsManager:
 
             for author in authors:
                 author_ids.add(self.__authors_id_mapping[author])
-            
+
             title = line_as_lst[-1]
             term_ids = []
             for title_term in title.split():
@@ -85,7 +85,7 @@ class TransactionsManager:
                 paper_context_model.append(mutual_info)
 
             context_models.append(paper_context_model)
-        return context_models    
+        return context_models
 
     def find_author_pattern_transactions_ids(self, author_pattern):
         '''
@@ -128,7 +128,7 @@ class TransactionsManager:
             word_id_mapping: dict(string, int)      Mapping dict from word to id to be populated
             word_id_mapping: dict(string, int)      Mapping dict from id to word to be populated
         '''
-        mapping_file = open(mapping_filename, "r")
+        mapping_file = open(mapping_filename, "r", encoding='utf-8')
 
         for line in mapping_file:
             id_word_lst = line.strip().split()

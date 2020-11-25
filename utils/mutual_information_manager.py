@@ -7,7 +7,7 @@ import os
 '''
 Usage:
 * To compute mutual information and to write to a file
-    transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
+    transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")
     mutual_info = MutualInformationManager(transactions, True)
     mutual_info.compute_mutual_information(author_patterns)
 
@@ -44,7 +44,7 @@ class MutualInformationManager:
     def read_mutual_information_from_file(self):
         '''
         Reads mutual information from file and populates the mutual information triangular matrix this
-        class stores. Note that it assumes that the first pattern index is <= the second pattern index 
+        class stores. Note that it assumes that the first pattern index is <= the second pattern index
         (aka that it was generated using this file)
         '''
         mutual_info_file = open(MutualInformationManager.AUTHOR_MUTUAL_INFO_FILENAME, "r")
@@ -102,7 +102,7 @@ class MutualInformationManager:
     def get_mutual_information_vector(self, pattern_ind, context_model_dim):
         '''
         Gets mutual information vector from precomputed mutual information cache. Assumes that the mutual info matrix has been
-        computed/read in. 
+        computed/read in.
 
         @param
             pattern_ind: int              Pattern index to find MI vec for
@@ -166,7 +166,7 @@ class MutualInformationManager:
             return (num + SMOOTHING_FACTOR) / (denom + 4 * SMOOTHING_FACTOR)
 
         p_x_1 = get_smoothed_probability(x_support, num_transactions)
-        p_y_1 = get_smoothed_probability(y_support, num_transactions)        
+        p_y_1 = get_smoothed_probability(y_support, num_transactions)
         p_x_0 = get_smoothed_probability(num_transactions - x_support, num_transactions)
         p_y_0 = get_smoothed_probability(num_transactions - y_support, num_transactions)
 
@@ -174,7 +174,7 @@ class MutualInformationManager:
         p_x_0_y_1 = get_smoothed_probability(y_support - x_y_intersection_len, num_transactions)
         p_x_1_y_0 = get_smoothed_probability(x_support - x_y_intersection_len, num_transactions)
         p_x_0_y_0 = get_smoothed_probability(num_transactions - x_y_union_len, num_transactions)
-        
+
         def compute_mutual_information_for_pattern_pair(p_x_y, p_x, p_y):
             #if p_x_y == 0:
             #    return 0
@@ -187,11 +187,11 @@ class MutualInformationManager:
         return mi_x_1_y_1 + mi_x_1_y_0 + mi_x_0_y_1 + mi_x_0_y_0
 
 if __name__ == "__main__":
-    #transactions = transactions_manager.TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
+    #transactions = transactions_manager.TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")
     #author_patterns = parse_file_into_patterns("data/frequent_author_patterns.txt")
     #mutual_info = MutualInformationManager(transactions, True)
     #mutual_info.compute_mutual_information(author_patterns)
     # mutual_info.write_mutual_information_to_file()
-    
+
     mutual_info = MutualInformationManager()
     mutual_info.read_mutual_information_from_file()
