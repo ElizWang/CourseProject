@@ -109,7 +109,7 @@ if __name__ == '__main__':
         mutual_info.read_mutual_information_from_file()
 
         title_patterns = parse_sequential_title_file_into_patterns("data/minimal_title_term_patterns.txt")
-        extractor =  SemanticallySimilarPatternExtractor(mutual_info, transactions, author_patterns, \
+        extractor =  SemanticallySimilarPatternExtractor(mutual_info, transactions, title_patterns, \
             MutualInformationManager.PatternType.TITLE_TITLE)
     
     strongest_similarity = extractor.find_semantically_similar_patterns(target_id, k)
