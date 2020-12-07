@@ -22,7 +22,7 @@ class TransactionsManager:
             self.title = title
 
     def __init__(self, papers_file_name, authors_mapping_filename, \
-                title_terms_mapping_filename):
+                title_terms_mapping_filename, maximum_line_count=None):
         '''
         Parses and stores the author-id mapping, the title terms-id mapping, and
         a list of all papers
@@ -31,6 +31,7 @@ class TransactionsManager:
             papers_file_name: string                data.csv file path
             authors_mapping_filename: string        file path to author-id mapping file
             title_terms_mapping_filename: string    file path to title term-id mapping file
+            maximum_line_count: int (optional)      cutoff for number of lines to read in for each paper
         '''
         papers_file = open(papers_file_name, "r", encoding='utf-8')
 
@@ -46,7 +47,10 @@ class TransactionsManager:
 
         self.__papers = []
 
+        line_counter = 0
         for line in papers_file:
+            if line_counter == maximum_line_count:
+                break
             # Note: Titles are guaranteed to not have commas
             line_as_lst = line.split(',')
             authors = line_as_lst[ : -1]
@@ -60,6 +64,7 @@ class TransactionsManager:
             for title_term in title.split():
                 term_ids.append(self.__title_terms_id_mapping[title_term])
             self.__papers.append(TransactionsManager.Paper(author_ids, term_ids))
+            line_counter += 1
 
         papers_file.close()
 
