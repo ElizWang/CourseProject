@@ -64,7 +64,6 @@ class TransactionsManager:
             for title_term in title.split():
                 term_ids.append(self.__title_terms_id_mapping[title_term])
             self.__papers.append(TransactionsManager.Paper(author_ids, term_ids))
-
             line_counter += 1
 
         papers_file.close()
