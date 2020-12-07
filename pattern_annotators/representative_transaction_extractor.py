@@ -1,6 +1,6 @@
 import heapq
 
-import sys 
+import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "utils"))
 
@@ -20,14 +20,14 @@ class RepresentativeTransactionExtractor:
         for comparisions and the transaction index, which keeps track of which transaction the cosine similarity
         belongs to
         '''
-        def __init__(self, cosine_sim, transaction_ind): 
+        def __init__(self, cosine_sim, transaction_ind):
             self.cosine_sim = cosine_sim
             self.transaction_ind = transaction_ind
 
-        def __lt__(self, other): 
+        def __lt__(self, other):
             return self.cosine_sim > other.cosine_sim
 
-        def __eq__(self, other): 
+        def __eq__(self, other):
             return self.cosine_sim == other.cosine_sim
 
     def __init__(self, transaction_mananger, mutual_info_manager, patterns, pattern_type, num_transactions):
@@ -64,7 +64,7 @@ class RepresentativeTransactionExtractor:
             paper_context_models = self.__transaction_manager.compute_author_context_models(self.__patterns)
         elif self.__pattern_type == MutualInformationManager.PatternType.TITLE_TITLE:
              paper_context_models = self.__transaction_manager.compute_title_context_models(self.__patterns)
-           
+
         context_model_dim = len(self.__patterns)
 
         similarities_max_q = []
@@ -74,7 +74,7 @@ class RepresentativeTransactionExtractor:
 
         for transaction_ind, transaction_vec in enumerate(paper_context_models):
             cosine_sim = compute_cosine_similarity(pattern_context_model, transaction_vec)
-            heapq.heappush(similarities_max_q, RepresentativeTransactionExtractor.TransactionSimilarity(cosine_sim, transaction_ind))             
+            heapq.heappush(similarities_max_q, RepresentativeTransactionExtractor.TransactionSimilarity(cosine_sim, transaction_ind))
 
         pattern_transactions = []
         for _ in range(self.__num_transactions):
@@ -133,22 +133,24 @@ if __name__ == "__main__":
     '''
     Usage: py pattern_annotators/representative_transaction_extractor.py [target_id] [k] [is author experiment]
     '''
+    # We pull only the first 100 lines to speed up computation.
+    MAXIMUM_LINE_COUNT = 100
     target_id = int(sys.argv[1])
     k = int(sys.argv[2])
     is_auth_experiment = sys.argv[3] == "True"
-    
-    transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt")    
-    
+
+    transactions = TransactionsManager("data/data.csv", "data/author_id_mappings.txt", "data/title_term_id_mappings.txt", MAXIMUM_LINE_COUNT)
+
     if is_auth_experiment:
         mutual_info = MutualInformationManager(MutualInformationManager.PatternType.AUTHOR_AUTHOR)
-        mutual_info.read_mutual_information_from_file()    
+        mutual_info.read_mutual_information_from_file()
 
         author_patterns = parse_author_file_into_patterns("data/frequent_author_patterns.txt")
         extractor = RepresentativeTransactionExtractor(transactions, mutual_info, author_patterns, \
             MutualInformationManager.PatternType.AUTHOR_AUTHOR, k)
     else:
         mutual_info = MutualInformationManager(MutualInformationManager.PatternType.TITLE_TITLE)
-        mutual_info.read_mutual_information_from_file()    
+        mutual_info.read_mutual_information_from_file()
 
         title_patterns = parse_sequential_title_file_into_patterns("data/minimal_title_term_patterns.txt")
         extractor = RepresentativeTransactionExtractor(transactions, mutual_info, title_patterns, \
