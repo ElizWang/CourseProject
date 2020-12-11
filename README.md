@@ -26,6 +26,9 @@ Yes, a more recent version of the dataset that derives from the dataset used in 
 6. If you answer “no” to Questions 4 & 5, how are you going to demonstrate that you have successfully reproduced the method introduced in the paper? 
 N/A
 
+## Demo 
+https://www.youtube.com/watch?v=3v8M0sW3xHc
+
 ## Setup
 0. Install bs4, urllib, and nltk (if they're not already installed)
 1. Run setup.sh (`sh setup.sh`) from CourseProject/ to
